@@ -1,0 +1,25 @@
+[Unit]
+Description=OPTIX GATT WiFi Manager
+After=bluetooth.service
+Requires=bluetooth.service
+
+[Service]
+Type=simple
+User=root
+Group=root
+WorkingDirectory=/home/hakan/optix/pi_zero_2w_setup
+Environment="PYTHONPATH=/home/hakan/optix/pi_zero_2w_setup"
+Environment="BLUETOOTH_DEVICE_NAME=OPTIX"
+ExecStart=/usr/bin/python3 /home/hakan/optix/pi_zero_2w_setup/gatt_server.py
+Restart=always
+RestartSec=3
+StandardOutput=journal
+StandardError=journal
+
+# Security and permissions
+ReadWritePaths=/home/hakan/optix
+PrivateNetwork=false
+PrivateDevices=false
+
+[Install]
+WantedBy=multi-user.target

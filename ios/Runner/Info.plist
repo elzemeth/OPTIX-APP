@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+	<dict>
+		<key>CFBundleDevelopmentRegion</key>
+		<string>$(DEVELOPMENT_LANGUAGE)</string>
+		<key>CFBundleDisplayName</key>
+		<string>OPTIX</string>
+		<key>CFBundleExecutable</key>
+		<string>$(EXECUTABLE_NAME)</string>
+		<key>CFBundleIdentifier</key>
+		<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+		<key>CFBundleInfoDictionaryVersion</key>
+		<string>6.0</string>
+		<key>CFBundleName</key>
+		<string>OPTIX</string>
+		<key>CFBundlePackageType</key>
+		<string>APPL</string>
+		<key>CFBundleShortVersionString</key>
+		<string>$(FLUTTER_BUILD_NAME)</string>
+		<key>CFBundleSignature</key>
+		<string>????</string>
+		<key>CFBundleVersion</key>
+		<string>$(FLUTTER_BUILD_NUMBER)</string>
+		<key>LSRequiresIPhoneOS</key>
+		<true />
+		<key>UILaunchStoryboardName</key>
+		<string>LaunchScreen</string>
+		<key>UIMainStoryboardFile</key>
+		<string>Main</string>
+		<key>UISupportedInterfaceOrientations</key>
+		<array>
+			<string>UIInterfaceOrientationPortrait</string>
+			<string>UIInterfaceOrientationLandscapeLeft</string>
+			<string>UIInterfaceOrientationLandscapeRight</string>
+		</array>
+		<key>UISupportedInterfaceOrientations~ipad</key>
+		<array>
+			<string>UIInterfaceOrientationPortrait</string>
+			<string>UIInterfaceOrientationPortraitUpsideDown</string>
+			<string>UIInterfaceOrientationLandscapeLeft</string>
+			<string>UIInterfaceOrientationLandscapeRight</string>
+		</array>
+		<key>CADisableMinimumFrameDurationOnPhone</key>
+		<true />
+		<key>UIApplicationSupportsIndirectInputEvents</key>
+		<true />
+		<key>CFBundleURLTypes</key>
+		<array>
+			<dict>
+				<key>CFBundleURLSchemes</key>
+				<array>
+					<string>io.supabase.optix</string>
+				</array>
+			</dict>
+		</array>
+
+		<!-- Location Permissions for iOS 18.6.2 -->
+		<key>NSLocationWhenInUseUsageDescription</key>
+		<string>OPTIX requires location access to scan for and connect to nearby Bluetooth devices. This is essential for device discovery and pairing.</string>
+		<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+		<string>OPTIX requires location access to scan for and connect to nearby Bluetooth devices. This is essential for device discovery and pairing.</string>
+		<key>NSLocationUsageDescription</key>
+		<string>OPTIX requires location access to scan for and connect to nearby Bluetooth devices. This is essential for device discovery and pairing.</string>
+		<key>NSLocationAlwaysUsageDescription</key>
+		<string>OPTIX requires location access to scan for and connect to nearby Bluetooth devices. This is essential for device discovery and pairing.</string>
+		
+		<!-- Bluetooth Permissions for iOS 18.6.2 -->
+		<key>NSBluetoothAlwaysUsageDescription</key>
+		<string>OPTIX requires Bluetooth access to connect to your smart glasses for authentication and data synchronization.</string>
+		<key>NSBluetoothPeripheralUsageDescription</key>
+		<string>OPTIX uses Bluetooth to communicate with your smart glasses and sync data.</string>
+		
+		<!-- Additional iOS 18.6.2 Permissions -->
+		<key>NSBluetoothUsageDescription</key>
+		<string>OPTIX uses Bluetooth to discover and connect to your smart glasses.</string>
+		
+		<!-- Privacy Settings for iOS 18.6.2 -->
+		<key>NSUserTrackingUsageDescription</key>
+		<string>OPTIX may use tracking to provide personalized device recommendations and improve your experience.</string>
+
+
+	</dict>
+</plist>

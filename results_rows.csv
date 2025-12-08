@@ -1,0 +1,91 @@
+id,file,ts,text_index,text_type,text,confidence,box,created_by,created_at
+310,image_1757612552.jpg,1757612564.4613037,17,character_corrected,"Bir zamanlar, ormanın kenarında minicik bir fidan yaşarmış.
+Her gün güneşe bakar, “Ben de bir gün büyük bir ağaç olacağım” dermiş.
+
+Ama güçlü rüzgâr gelip dallarını salladığında çok korkarmış:
+“Ya köklerim sökülürse?”
+
+Bir gün yaşlı meşe ağacı ona şöyle demiş:
+
+“Korkma küçük dostum. Rüzgâr seni salladıkça köklerin güçlenir. Sabret, büyüyeceksin.”
+
+Aradan yıllar geçmiş, fidan artık kocaman bir çınar olmuş. Rüzgâr estiğinde artık korkmaz, dallarını gururla sallarmış.
+Ders: Zorluklar bizi daha da güçlü yapar.",0.9093,"[[4387, 1926], [4601, 1917], [4603, 1965], [4389, 1975]]",18d66151-e43a-55c9-b4b8-b852c964079f,2025-09-11 17:43:39.40147+00
+311,image_1757612552.jpg,1757612564.4613037,17,meaning_corrected,"Bir çayırda hızlı koşan bir tavşan ve yavaş ama sabırlı bir kaplumbağa yaşarmış.
+Tavşan sürekli övünürmüş:
+
+“Benim kadar hızlı koşan yok!”
+
+Kaplumbağa gülümsemiş:
+
+“Hızlı olmak güzel, ama sabırlı olmak daha güzeldir.”
+
+Bir gün yarış yapmaya karar vermişler.
+Tavşan çok hızlı başlamış, ama biraz sonra uyuyakalmış. Kaplumbağa ise yavaş yavaş, hiç durmadan yürümüş.
+Sonunda yarışı kaplumbağa kazanmış.
+
+Ders: Sabır ve azim, aceleden daha değerlidir.",0.9093,"[[4387, 1926], [4601, 1917], [4603, 1965], [4389, 1975]]",18d66151-e43a-55c9-b4b8-b852c964079f,2025-09-11 17:43:39.40147+00
+312,image_1757817229.jpg,1757817234.003323,0,raw,155,0.5617,"[[1773, 1836], [1883, 1787], [1919, 1869], [1809, 1918]]",18d66151-e43a-55c9-b4b8-b852c964079f,2025-09-14 02:33:56.797591+00
+313,image_1757817229.jpg,1757817234.003323,0,character_corrected,155,0.5617,"[[1773, 1836], [1883, 1787], [1919, 1869], [1809, 1918]]",18d66151-e43a-55c9-b4b8-b852c964079f,2025-09-14 02:33:56.797591+00
+314,image_1757817229.jpg,1757817234.003323,0,meaning_corrected,"Lütfen düzeltilmesini istediğiniz metni 155 numaralı satırın yerine yazın.  ""155"" tek başına bir metin değil, bu yüzden onu düzeltemem.  Metni girdikten sonra size yardımcı olabilirim.",0.5617,"[[1773, 1836], [1883, 1787], [1919, 1869], [1809, 1918]]",18d66151-e43a-55c9-b4b8-b852c964079f,2025-09-14 02:33:56.797591+00
+315,image_1757817249.jpg,1757817258.1725245,0,raw,d,0.9014,"[[2147, 1481], [2195, 1481], [2195, 1522], [2147, 1522]]",18d66151-e43a-55c9-b4b8-b852c964079f,2025-09-14 02:34:26.652219+00
+316,image_1757817249.jpg,1757817258.1725245,0,character_corrected,d,0.9014,"[[2147, 1481], [2195, 1481], [2195, 1522], [2147, 1522]]",18d66151-e43a-55c9-b4b8-b852c964079f,2025-09-14 02:34:26.652219+00
+317,image_1757817249.jpg,1757817258.1725245,0,meaning_corrected,"Metin sadece ""d"" harfinden oluşuyor.  Bu haliyle anlam ifade etmiyor.  Düzeltilmiş bir metin oluşturmak için daha fazla bilgiye ihtiyacım var.  Lütfen düzeltilmesini istediğiniz metni paylaşın.",0.9014,"[[2147, 1481], [2195, 1481], [2195, 1522], [2147, 1522]]",18d66151-e43a-55c9-b4b8-b852c964079f,2025-09-14 02:34:26.652219+00
+318,image_1757817249.jpg,1757817258.1725245,1,raw,uonnios,0.7063,"[[1770, 1490], [1935, 1502], [1932, 1539], [1768, 1527]]",18d66151-e43a-55c9-b4b8-b852c964079f,2025-09-14 02:34:26.652219+00
+319,image_1757817249.jpg,1757817258.1725245,1,character_corrected,Düzeltilmiş metin:  Bu metinde düzeltilecek Türkçe karakter yok.,0.7063,"[[1770, 1490], [1935, 1502], [1932, 1539], [1768, 1527]]",18d66151-e43a-55c9-b4b8-b852c964079f,2025-09-14 02:34:26.652219+00
+320,image_1757817249.jpg,1757817258.1725245,1,meaning_corrected,"""uonnios"" kelimesi, OCR hatası nedeniyle anlamsızdır.  Anlamını bilmeden düzeltmek mümkün değil.  Daha fazla bilgi veya bağlam verirseniz, metni düzeltebilirim.",0.7063,"[[1770, 1490], [1935, 1502], [1932, 1539], [1768, 1527]]",18d66151-e43a-55c9-b4b8-b852c964079f,2025-09-14 02:34:26.652219+00
+321,image_1757817249.jpg,1757817258.1725245,2,raw,pap,0.5099,"[[2368, 1540], [2450, 1548], [2446, 1592], [2364, 1584]]",18d66151-e43a-55c9-b4b8-b852c964079f,2025-09-14 02:34:26.652219+00
+322,image_1757817249.jpg,1757817258.1725245,2,character_corrected,pap,0.5099,"[[2368, 1540], [2450, 1548], [2446, 1592], [2364, 1584]]",18d66151-e43a-55c9-b4b8-b852c964079f,2025-09-14 02:34:26.652219+00
+323,image_1757817249.jpg,1757817258.1725245,2,meaning_corrected,"""pap"" kelimesi tek başına bir anlam ifade etmiyor.  Daha fazla bağlam veya metin gerekmektedir.  ""pap"" kelimesi bir OCR hatası olabilir ve birçok farklı kelimeyi temsil edebilir.  Örneğin:
+
+* **Papalık:** Papa'nın makamı veya görevi.
+* **Papara:** Bir ödeme sistemi.
+* **Papatya:** Bir çiçek türü.
+* **Yap:** Bir fiil (yapmak fiilinin kısaltması).
+* **Kap:** Bir kap.
+
+Lütfen daha fazla metin verirseniz, doğru düzeltmeyi yapabilirim.",0.5099,"[[2368, 1540], [2450, 1548], [2446, 1592], [2364, 1584]]",18d66151-e43a-55c9-b4b8-b852c964079f,2025-09-14 02:34:26.652219+00
+324,image_1757817249.jpg,1757817258.1725245,3,raw,Id,0.6806,"[[2113, 1557], [2166, 1560], [2163, 1605], [2110, 1601]]",18d66151-e43a-55c9-b4b8-b852c964079f,2025-09-14 02:34:26.652219+00
+325,image_1757817249.jpg,1757817258.1725245,3,character_corrected,Düzeltilmiş metin: İd,0.6806,"[[2113, 1557], [2166, 1560], [2163, 1605], [2110, 1601]]",18d66151-e43a-55c9-b4b8-b852c964079f,2025-09-14 02:34:26.652219+00
+326,image_1757817249.jpg,1757817258.1725245,3,meaning_corrected,"Metin sadece ""Id"" ise, düzeltilmiş metin için herhangi bir anlam çıkarmak mümkün değil.  ""Id"" kelimesi tek başına bir anlam ifade etmiyor.  Daha fazla metin veya bağlam sağlamanız gerekiyor.",0.6806,"[[2113, 1557], [2166, 1560], [2163, 1605], [2110, 1601]]",18d66151-e43a-55c9-b4b8-b852c964079f,2025-09-14 02:34:26.652219+00
+327,image_1757817308.jpg,1757817318.4410148,0,raw,JOJ,0.5321,"[[2399, 1501], [2460, 1506], [2456, 1543], [2396, 1538]]",18d66151-e43a-55c9-b4b8-b852c964079f,2025-09-14 02:35:32.309855+00
+328,image_1757817308.jpg,1757817318.4410148,0,character_corrected,JOJ,0.5321,"[[2399, 1501], [2460, 1506], [2456, 1543], [2396, 1538]]",18d66151-e43a-55c9-b4b8-b852c964079f,2025-09-14 02:35:32.309855+00
+329,image_1757817308.jpg,1757817318.4410148,0,meaning_corrected,"""JOJ"" tek başına bir metin olarak anlam ifade etmiyor.  Daha fazla bilgiye ihtiyacım var.  ""JOJ"" bir kısaltma, bir kod, bir yanlış yazım veya başka bir şey olabilir.  Lütfen daha fazla bağlam verirseniz, metni düzeltebilirim.",0.5321,"[[2399, 1501], [2460, 1506], [2456, 1543], [2396, 1538]]",18d66151-e43a-55c9-b4b8-b852c964079f,2025-09-14 02:35:32.309855+00
+330,image_1757817308.jpg,1757817318.4410148,1,raw,UO,0.8364,"[[1840, 1519], [1887, 1519], [1887, 1551], [1840, 1551]]",18d66151-e43a-55c9-b4b8-b852c964079f,2025-09-14 02:35:32.309855+00
+331,image_1757817308.jpg,1757817318.4410148,1,character_corrected,UO,0.8364,"[[1840, 1519], [1887, 1519], [1887, 1551], [1840, 1551]]",18d66151-e43a-55c9-b4b8-b852c964079f,2025-09-14 02:35:32.309855+00
+332,image_1757817308.jpg,1757817318.4410148,1,meaning_corrected,"""UO"" tek başına bir metin değil, bu yüzden düzeltilemez.  Daha fazla bilgi veya metin sağlamanız gerekiyor.  ""UO"" bir kısaltma, bir yazım hatası veya başka bir şey olabilir.  Lütfen daha fazla bağlam verin.",0.8364,"[[1840, 1519], [1887, 1519], [1887, 1551], [1840, 1551]]",18d66151-e43a-55c9-b4b8-b852c964079f,2025-09-14 02:35:32.309855+00
+333,image_1757817308.jpg,1757817318.4410148,2,raw,nnjos,0.6606,"[[1883, 1518], [1988, 1521], [1986, 1558], [1882, 1555]]",18d66151-e43a-55c9-b4b8-b852c964079f,2025-09-14 02:35:32.309855+00
+334,image_1757817308.jpg,1757817318.4410148,2,character_corrected,"Metinde düzeltilecek Türkçe karakter yok.  ""nnjos""  gibi bir kelime Türkçe değil.",0.6606,"[[1883, 1518], [1988, 1521], [1986, 1558], [1882, 1555]]",18d66151-e43a-55c9-b4b8-b852c964079f,2025-09-14 02:35:32.309855+00
+335,image_1757817308.jpg,1757817318.4410148,2,meaning_corrected,"""nnjos"" kelimesi anlamsızdır ve OCR hatası sonucu oluşmuştur.  Düzeltilmiş bir metin oluşturmak için orijinal metnin ne olması gerektiğine dair hiçbir bilgi yok.  Daha fazla bilgi verirseniz, metni düzeltebilirim.",0.6606,"[[1883, 1518], [1988, 1521], [1986, 1558], [1882, 1555]]",18d66151-e43a-55c9-b4b8-b852c964079f,2025-09-14 02:35:32.309855+00
+336,image_1757817308.jpg,1757817318.4410148,3,raw,S,0.8988,"[[1863, 1563], [1903, 1563], [1903, 1591], [1863, 1591]]",18d66151-e43a-55c9-b4b8-b852c964079f,2025-09-14 02:35:32.309855+00
+337,image_1757817308.jpg,1757817318.4410148,3,character_corrected,S,0.8988,"[[1863, 1563], [1903, 1563], [1903, 1591], [1863, 1591]]",18d66151-e43a-55c9-b4b8-b852c964079f,2025-09-14 02:35:32.309855+00
+338,image_1757817308.jpg,1757817318.4410148,3,meaning_corrected,"Metin sadece ""S"" harfinden oluşuyor.  Düzeltilecek bir şey yok, ancak anlamlandırmak için daha fazla bilgi gerekiyor.  ""S"" harfi bir cümlenin başlangıcı, kısaltma veya başka bir şey olabilir.  Daha fazla metin verirseniz düzeltebilirim.",0.8988,"[[1863, 1563], [1903, 1563], [1903, 1591], [1863, 1591]]",18d66151-e43a-55c9-b4b8-b852c964079f,2025-09-14 02:35:32.309855+00
+339,image_1757817308.jpg,1757817318.4410148,4,raw,Id,0.6839,"[[2148, 1570], [2190, 1570], [2190, 1606], [2148, 1606]]",18d66151-e43a-55c9-b4b8-b852c964079f,2025-09-14 02:35:32.309855+00
+340,image_1757817308.jpg,1757817318.4410148,4,character_corrected,Düzeltilmiş metin: İd,0.6839,"[[2148, 1570], [2190, 1570], [2190, 1606], [2148, 1606]]",18d66151-e43a-55c9-b4b8-b852c964079f,2025-09-14 02:35:32.309855+00
+341,image_1757817308.jpg,1757817318.4410148,4,meaning_corrected,"Metin sadece ""Id"" olarak verilmiş.  Bu bir OCR hatası veya eksik bir metin olabilir.  ""Id"" kelimesi tek başına bir anlam ifade etmiyor.  Daha fazla metin sağlamanız gerekiyor ki düzeltebileyim.",0.6839,"[[2148, 1570], [2190, 1570], [2190, 1606], [2148, 1606]]",18d66151-e43a-55c9-b4b8-b852c964079f,2025-09-14 02:35:32.309855+00
+342,image_1757817308.jpg,1757817318.4410148,5,raw,厂,0.7078,"[[1283, 1968], [1841, 1787], [2038, 2396], [1480, 2578]]",18d66151-e43a-55c9-b4b8-b852c964079f,2025-09-14 02:35:32.309855+00
+343,image_1757817308.jpg,1757817318.4410148,5,character_corrected,Metin zaten Türkçe karakter içermiyor.  Dolayısıyla düzeltme yapılamaz.,0.7078,"[[1283, 1968], [1841, 1787], [2038, 2396], [1480, 2578]]",18d66151-e43a-55c9-b4b8-b852c964079f,2025-09-14 02:35:32.309855+00
+344,image_1757817308.jpg,1757817318.4410148,5,meaning_corrected,"Metin sadece ""厂"" karakterini içeriyor. Bu karakter Çince'de ""fabrika"" anlamına gelir.  Dolayısıyla düzeltilmiş metin:
+
+**Düzeltilmiş metin: Fabrika**",0.7078,"[[1283, 1968], [1841, 1787], [2038, 2396], [1480, 2578]]",18d66151-e43a-55c9-b4b8-b852c964079f,2025-09-14 02:35:32.309855+00
+345,image_1757817308.jpg,1757817318.4410148,6,raw,VAWLON,0.6048,"[[3588, 2234], [3664, 2255], [3658, 2278], [3582, 2257]]",18d66151-e43a-55c9-b4b8-b852c964079f,2025-09-14 02:35:32.309855+00
+346,image_1757817308.jpg,1757817318.4410148,6,character_corrected,VAWLON,0.6048,"[[3588, 2234], [3664, 2255], [3658, 2278], [3582, 2257]]",18d66151-e43a-55c9-b4b8-b852c964079f,2025-09-14 02:35:32.309855+00
+347,image_1757817308.jpg,1757817318.4410148,6,meaning_corrected,"""VAWLON"" kelimesinin ne anlama geldiğini bilmediğim için düzeltme yapamıyorum.  Bu bir marka adı, kısaltma veya yanlış yazılmış bir kelime olabilir.  Anlamını bilmeden doğru bir düzeltme yapmak mümkün değil.  Lütfen daha fazla bağlam verirseniz yardımcı olabilirim.",0.6048,"[[3588, 2234], [3664, 2255], [3658, 2278], [3582, 2257]]",18d66151-e43a-55c9-b4b8-b852c964079f,2025-09-14 02:35:32.309855+00
+348,image_1760192643.jpg,1760192649.5600991,0,raw,-,0.9488,"[[248, 2372], [625, 2320], [678, 2698], [300, 2750]]",18d66151-e43a-55c9-b4b8-b852c964079f,2025-10-11 14:24:09.351301+00
+349,image_1760192643.jpg,1760192649.5600991,0,character_corrected,-,0.9488,"[[248, 2372], [625, 2320], [678, 2698], [300, 2750]]",18d66151-e43a-55c9-b4b8-b852c964079f,2025-10-11 14:24:09.351301+00
+350,image_1760192643.jpg,1760192649.5600991,0,meaning_corrected,-,0.9488,"[[248, 2372], [625, 2320], [678, 2698], [300, 2750]]",18d66151-e43a-55c9-b4b8-b852c964079f,2025-10-11 14:24:09.351301+00
+351,image_1760192653.jpg,1760192658.402368,0,raw,-,0.5857,"[[1547, 585], [1891, 368], [2104, 710], [1760, 926]]",18d66151-e43a-55c9-b4b8-b852c964079f,2025-10-11 14:24:17.209172+00
+352,image_1760192653.jpg,1760192658.402368,0,character_corrected,-,0.5857,"[[1547, 585], [1891, 368], [2104, 710], [1760, 926]]",18d66151-e43a-55c9-b4b8-b852c964079f,2025-10-11 14:24:17.209172+00
+353,image_1760192653.jpg,1760192658.402368,0,meaning_corrected,-,0.5857,"[[1547, 585], [1891, 368], [2104, 710], [1760, 926]]",18d66151-e43a-55c9-b4b8-b852c964079f,2025-10-11 14:24:17.209172+00
+354,image_1760192719.jpg,1760192724.0718625,0,raw,-,0.7429,"[[1056, 2288], [1362, 2272], [1375, 2516], [1069, 2533]]",18d66151-e43a-55c9-b4b8-b852c964079f,2025-10-11 14:25:23.189073+00
+355,image_1760192719.jpg,1760192724.0718625,0,character_corrected,-,0.7429,"[[1056, 2288], [1362, 2272], [1375, 2516], [1069, 2533]]",18d66151-e43a-55c9-b4b8-b852c964079f,2025-10-11 14:25:23.189073+00
+356,image_1760192719.jpg,1760192724.0718625,0,meaning_corrected,-,0.7429,"[[1056, 2288], [1362, 2272], [1375, 2516], [1069, 2533]]",18d66151-e43a-55c9-b4b8-b852c964079f,2025-10-11 14:25:23.189073+00
+357,image_1760192754.jpg,1760192758.1408505,0,raw,-,0.7256,"[[87, 2420], [401, 2276], [565, 2632], [251, 2775]]",18d66151-e43a-55c9-b4b8-b852c964079f,2025-10-11 14:25:56.951558+00
+358,image_1760192754.jpg,1760192758.1408505,0,character_corrected,-,0.7256,"[[87, 2420], [401, 2276], [565, 2632], [251, 2775]]",18d66151-e43a-55c9-b4b8-b852c964079f,2025-10-11 14:25:56.951558+00
+359,image_1760192754.jpg,1760192758.1408505,0,meaning_corrected,-,0.7256,"[[87, 2420], [401, 2276], [565, 2632], [251, 2775]]",18d66151-e43a-55c9-b4b8-b852c964079f,2025-10-11 14:25:56.951558+00
+360,image_1760205324.jpg,1760205328.9302206,0,raw,-,0.9194,"[[1141, 1517], [2029, 1569], [2001, 2032], [1114, 1980]]",18d66151-e43a-55c9-b4b8-b852c964079f,2025-10-11 17:55:30.212358+00
+361,image_1760205324.jpg,1760205328.9302206,0,character_corrected,-,0.9194,"[[1141, 1517], [2029, 1569], [2001, 2032], [1114, 1980]]",18d66151-e43a-55c9-b4b8-b852c964079f,2025-10-11 17:55:30.212358+00
+362,image_1760205324.jpg,1760205328.9302206,0,meaning_corrected,-,0.9194,"[[1141, 1517], [2029, 1569], [2001, 2032], [1114, 1980]]",18d66151-e43a-55c9-b4b8-b852c964079f,2025-10-11 17:55:30.212358+00
+363,image_1760205332.jpg,1760205336.140626,0,raw,-,0.7632,"[[386, 1277], [1375, 1214], [1404, 1667], [415, 1730]]",18d66151-e43a-55c9-b4b8-b852c964079f,2025-10-11 17:55:36.870988+00
+364,image_1760205332.jpg,1760205336.140626,0,character_corrected,-,0.7632,"[[386, 1277], [1375, 1214], [1404, 1667], [415, 1730]]",18d66151-e43a-55c9-b4b8-b852c964079f,2025-10-11 17:55:36.870988+00
+365,image_1760205332.jpg,1760205336.140626,0,meaning_corrected,-,0.7632,"[[386, 1277], [1375, 1214], [1404, 1667], [415, 1730]]",18d66151-e43a-55c9-b4b8-b852c964079f,2025-10-11 17:55:36.870988+00
