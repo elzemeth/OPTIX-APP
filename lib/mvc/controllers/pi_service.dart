@@ -86,10 +86,11 @@ class PiService {
       final tempFile = File('${Directory.systemTemp.path}/wifi_credentials_${DateTime.now().millisecondsSinceEpoch}.json');
       await tempFile.writeAsString(jsonContent);
 
-      // TR: SFTP ile dosyayı yükle | EN: Upload file via SFTP | RU: Загрузить файл через SFTP
+      // TR: SFTP ile önce home dizinine yükle (izin hatalarını azaltır) | EN: Upload to home via SFTP first (avoid permission issues) | RU: Сначала загрузить в домашний каталог (уменьшает ошибки прав)
+      const tempRemotePath = '/home/optix/wifi_credentials_temp.json';
       final uploadResult = await client.sftpUpload(
         path: tempFile.path,
-        toPath: wifiCredentialsPath,
+        toPath: tempRemotePath,
       );
 
       // TR: Geçici dosyayı sil | EN: Delete temporary file | RU: Удалить временный файл
@@ -100,6 +101,10 @@ class PiService {
         await client.disconnectSFTP();
         return false;
       }
+
+      // TR: Yüklenen dosyayı sudo ile hedefe taşı | EN: Move uploaded file to target with sudo | RU: Переместить загруженный файл в целевой с sudo
+      final moveResult = await client.execute("echo '$piPassword' | sudo -S mv $tempRemotePath $wifiCredentialsPath");
+      debugPrint('Move result: $moveResult');
 
       debugPrint('✅ WiFi credentials uploaded via SFTP');
       await client.disconnectSFTP();

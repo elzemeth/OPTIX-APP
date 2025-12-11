@@ -31,6 +31,7 @@ class BleService {
   StreamSubscription<List<ScanResult>>? _scanSubscription;
   final List<BleDevice> _devices = [];
   bool _isScanning = false;
+  bool _isConnecting = false;
   String? _status;
 
   List<BleDevice> get devices => _devices;
@@ -399,8 +400,20 @@ class BleService {
   }
 
   Future<Map<String, dynamic>?> connectToDevice(BleDevice bleDevice) async {
+    // TR: Paralel bağlantı denemelerini engelle | EN: Prevent parallel connect attempts | RU: Предотвратить параллельные попытки подключения
+    if (_isConnecting) {
+      debugPrint('Already connecting, skipping new request');
+      return null;
+    }
+    _isConnecting = true;
+
     try {
       _updateStatus('Connecting to ${bleDevice.name}...');
+
+      // TR: Bağlanmadan önce taramayı durdur (iOS pairing popup tekrarlarını azaltır) | EN: Stop scan before connecting (reduces repeated iOS pairing popups) | RU: Остановить сканирование перед подключением (уменьшает повторные окна сопряжения iOS)
+      if (_isScanning) {
+        await stopScan();
+      }
 
       // TR: Mevcut bağlantı durumunu kontrol et | EN: Check current connection state | RU: Проверить текущее состояние подключения
       final currentState = await bleDevice.device.connectionState.first;
@@ -479,6 +492,8 @@ class BleService {
         'deviceName': bleDevice.name,
         'error': e.toString(),
       };
+    } finally {
+      _isConnecting = false;
     }
   }
 
