@@ -504,6 +504,7 @@ class OptixSystem:
         self.device_hash = SystemUtils.hash_serial(self.serial_number)
         self.camera_system = CameraSystem()
         self.ble_active = False
+        self.ble_thread = None
         self.streaming_active = False
         self.mainloop = None
         self.status_characteristic = None  # Will be set by BLE service
@@ -782,7 +783,8 @@ network={{
             return False
     
     def start_ble_service(self):
-        if self.ble_active:
+        # If previously marked active but thread died, allow restart
+        if self.ble_active and self.ble_thread and self.ble_thread.is_alive():
             return
             
         try:
@@ -817,9 +819,9 @@ network={{
             
             # Start main loop in thread
             self.mainloop = GLib.MainLoop()
-            ble_thread = threading.Thread(target=self.mainloop.run)
-            ble_thread.daemon = True
-            ble_thread.start()
+            self.ble_thread = threading.Thread(target=self.mainloop.run)
+            self.ble_thread.daemon = True
+            self.ble_thread.start()
             
         except Exception as e:
             logger.error(f"❌ BLE service error: {e}")
@@ -828,6 +830,7 @@ network={{
         if self.mainloop:
             self.mainloop.quit()
         self.ble_active = False
+        self.ble_thread = None
         logger.info("🔴 BLE service stopped")
     
     def find_adapter(self, bus):
@@ -927,6 +930,12 @@ network={{
         
         try:
             while True:
+                # Ensure BLE stays active for reconnects
+                if (not self.ble_active) or (self.ble_thread and not self.ble_thread.is_alive()):
+                    logger.info("🔄 BLE service down; restarting advertising")
+                    self.ble_active = False
+                    self.start_ble_service()
+
                 wifi_connected = SystemUtils.is_wifi_connected()
                 
                 if wifi_connected:

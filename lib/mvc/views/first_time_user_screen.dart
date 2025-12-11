@@ -4,7 +4,9 @@ import '../controllers/auth_service.dart';
 import 'login/login_screen.dart';
 
 class FirstTimeUserScreen extends StatefulWidget {
-  const FirstTimeUserScreen({super.key});
+  final bool signupPreferred;
+
+  const FirstTimeUserScreen({super.key, this.signupPreferred = false});
 
   @override
   State<FirstTimeUserScreen> createState() => _FirstTimeUserScreenState();
@@ -22,6 +24,75 @@ class _FirstTimeUserScreenState extends State<FirstTimeUserScreen> {
   void initState() {
     super.initState();
     _listenToDevices();
+  }
+
+  Future<void> _promptWifiCredentials(BleDevice device) async {
+    final ssidController = TextEditingController();
+    final passController = TextEditingController();
+    final navigator = Navigator.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) {
+        final cs = Theme.of(ctx).colorScheme;
+        return AlertDialog(
+          title: const Text('WiFi Bağlantısı'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: ssidController,
+                decoration: const InputDecoration(
+                  labelText: 'WiFi SSID',
+                  prefixIcon: Icon(Icons.wifi),
+                ),
+              ),
+              const SizedBox(height: 12),
+              TextField(
+                controller: passController,
+                obscureText: true,
+                decoration: const InputDecoration(
+                  labelText: 'WiFi Şifresi',
+                  prefixIcon: Icon(Icons.lock),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => navigator.pop(false),
+              child: Text('Vazgeç', style: TextStyle(color: cs.onSurface)),
+            ),
+            ElevatedButton(
+              onPressed: () => navigator.pop(true),
+              child: const Text('Bağlan'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed != true) return;
+
+    final ssid = ssidController.text.trim();
+    final password = passController.text;
+
+    if (ssid.isEmpty || password.isEmpty) {
+      messenger.showSnackBar(const SnackBar(content: Text('SSID ve şifre gerekli.')));
+      return;
+    }
+
+    final ok = await _bleService.sendWifiCredentials(device, ssid, password);
+    if (!mounted) return;
+
+    messenger.showSnackBar(
+      SnackBar(
+        content: Text(ok
+            ? 'WiFi bilgileri gönderildi.'
+            : 'WiFi bilgileri gönderilemedi. Tekrar deneyin.'),
+      ),
+    );
   }
 
   void _listenToDevices() {
@@ -67,22 +138,28 @@ class _FirstTimeUserScreenState extends State<FirstTimeUserScreen> {
           await _authService.setSerialNumber(serialNumber);
           debugPrint('Serial number set: $serialNumber');
           
-          // Check if user exists with this serial number
-          final userExists = await _authService.userExistsBySerial(serialNumber);
+          // Ask for WiFi credentials right after connection
+          await _promptWifiCredentials(device);
           
+          // Decide navigation based on intent
           if (!mounted) return;
-          
-          if (userExists) {
-            // User exists, go to login screen
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                builder: (context) => const LoginScreen(),
-              ),
-            );
-          } else {
-            // New user, go to signup screen
+          if (widget.signupPreferred) {
+            // User deliberately came here to sign up
             Navigator.pushReplacementNamed(context, '/signup');
+          } else {
+            // Auto-route: if device already has an account → login, else signup
+            final userExists = await _authService.userExistsBySerial(serialNumber);
+            if (!mounted) return;
+            if (userExists) {
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const LoginScreen(),
+                ),
+              );
+            } else {
+              Navigator.pushReplacementNamed(context, '/signup');
+            }
           }
         } else {
           if (!mounted) return;

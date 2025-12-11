@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -23,6 +24,9 @@ class BleService {
   static final BleService _instance = BleService._internal();
   factory BleService() => _instance;
   BleService._internal();
+
+  static const String wifiServiceUuid = '12345678-1234-5678-9abc-123456789abc';
+  static const String credentialCharUuid = '87654321-4321-4321-4321-cba987654321';
 
   StreamSubscription<List<ScanResult>>? _scanSubscription;
   final List<BleDevice> _devices = [];
@@ -525,6 +529,48 @@ class BleService {
     } catch (e) {
       debugPrint('Error getting serial number: $e');
       return null;
+    }
+  }
+
+  Future<bool> sendWifiCredentials(BleDevice bleDevice, String ssid, String password) async {
+    try {
+      // Ensure services are discovered
+      await bleDevice.device.discoverServices();
+      List<BluetoothService> services = await bleDevice.device.services.first;
+
+      BluetoothService? wifiService;
+      for (final s in services) {
+        if (s.uuid.toString().toLowerCase() == wifiServiceUuid) {
+          wifiService = s;
+          break;
+        }
+      }
+
+      if (wifiService == null) {
+        debugPrint('WiFi service not found on device');
+        return false;
+      }
+
+      BluetoothCharacteristic? credChar;
+      for (final c in wifiService.characteristics) {
+        if (c.uuid.toString().toLowerCase() == credentialCharUuid) {
+          credChar = c;
+          break;
+        }
+      }
+
+      if (credChar == null) {
+        debugPrint('Credential characteristic not found');
+        return false;
+      }
+
+      final payload = jsonEncode({'ssid': ssid, 'password': password});
+      await credChar.write(utf8.encode(payload), withoutResponse: false);
+      debugPrint('WiFi credentials sent');
+      return true;
+    } catch (e) {
+      debugPrint('Error sending WiFi credentials: $e');
+      return false;
     }
   }
 

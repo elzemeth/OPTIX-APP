@@ -142,10 +142,15 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       const SizedBox(height: 16),
                       
-                      // Sign up link
+                      // TR: Kayıt bağlantısı | EN: Sign up link | RU: Ссылка регистрации
                       TextButton(
                         onPressed: () {
-                          Navigator.pushReplacementNamed(context, AppConfig.firstTimeRoute);
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const FirstTimeUserScreen(signupPreferred: true),
+                            ),
+                          );
                         },
                         child: Text(AppStrings.dontHaveAccount),
                       ),
