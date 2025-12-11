@@ -402,31 +402,28 @@ class BleService {
     try {
       _updateStatus('Connecting to ${bleDevice.name}...');
 
-      await bleDevice.device.connect();
+      // TR: Mevcut bağlantı durumunu kontrol et | EN: Check current connection state | RU: Проверить текущее состояние подключения
+      final currentState = await bleDevice.device.connectionState.first;
+      if (currentState == BluetoothConnectionState.connected) {
+        debugPrint('Device already connected');
+        // TR: Zaten bağlıysa seri numara al | EN: If already connected, get serial number | RU: Если уже подключено, получить серийный номер
+        String? serialNumber = await _getSerialNumber(bleDevice.device);
+        return {
+          'connected': true,
+          'serialNumber': serialNumber,
+          'deviceName': bleDevice.name,
+        };
+      }
 
-      // TR: Bağlantının kurulmasını bekle | EN: Wait for connection to be established | RU: Ждать установления соединения
-      await for (final state in bleDevice.device.connectionState) {
+      // TR: Bağlanmayı dene | EN: Try to connect | RU: Попробовать подключиться
+      await bleDevice.device.connect(timeout: const Duration(seconds: 15));
+
+      // TR: Bağlantının kurulmasını bekle (timeout ile) | EN: Wait for connection with timeout | RU: Ждать подключения с таймаутом
+      BluetoothConnectionState? finalState;
+      await for (final state in bleDevice.device.connectionState.timeout(const Duration(seconds: 15))) {
+        finalState = state;
         if (state == BluetoothConnectionState.connected) {
-          _updateStatus('Connected to ${bleDevice.name}');
-
-          // TR: Cihazdan seri numara almaya çalış | EN: Try to get serial number from device | RU: Попробовать получить серийный номер с устройства
-          String? serialNumber = await _getSerialNumber(bleDevice.device);
-
-          if (serialNumber != null) {
-            _updateStatus('Serial number found: $serialNumber');
-            return {
-              'connected': true,
-              'serialNumber': serialNumber,
-              'deviceName': bleDevice.name,
-            };
-          } else {
-            _updateStatus('No serial number found');
-            return {
-              'connected': true,
-              'serialNumber': null,
-              'deviceName': bleDevice.name,
-            };
-          }
+          break;
         } else if (state == BluetoothConnectionState.disconnected) {
           _updateStatus('Failed to connect to ${bleDevice.name}');
           return {
@@ -437,6 +434,30 @@ class BleService {
         }
       }
 
+      if (finalState == BluetoothConnectionState.connected) {
+        _updateStatus('Connected to ${bleDevice.name}');
+
+        // TR: Cihazdan seri numara almaya çalış | EN: Try to get serial number from device | RU: Попробовать получить серийный номер с устройства
+        String? serialNumber = await _getSerialNumber(bleDevice.device);
+
+        if (serialNumber != null) {
+          _updateStatus('Serial number found: $serialNumber');
+          return {
+            'connected': true,
+            'serialNumber': serialNumber,
+            'deviceName': bleDevice.name,
+          };
+        } else {
+          _updateStatus('No serial number found');
+          return {
+            'connected': true,
+            'serialNumber': null,
+            'deviceName': bleDevice.name,
+          };
+        }
+      }
+
+      _updateStatus('Connection timeout');
       return {
         'connected': false,
         'serialNumber': null,
@@ -584,6 +605,23 @@ class BleService {
 
   Future<bool> sendWifiCredentials(BleDevice bleDevice, String ssid, String password) async {
     try {
+      // TR: Cihazın bağlı olduğunu kontrol et | EN: Check if device is connected | RU: Проверить, подключено ли устройство
+      final connectionState = await bleDevice.device.connectionState.first;
+      if (connectionState != BluetoothConnectionState.connected) {
+        debugPrint('Device is not connected. Current state: $connectionState');
+        // TR: Bağlantıyı tekrar dene | EN: Try to reconnect | RU: Попробовать переподключиться
+        await bleDevice.device.connect(timeout: const Duration(seconds: 10));
+        // TR: Bağlantının kurulmasını bekle | EN: Wait for connection | RU: Ждать подключения
+        await for (final state in bleDevice.device.connectionState.timeout(const Duration(seconds: 10))) {
+          if (state == BluetoothConnectionState.connected) {
+            break;
+          } else if (state == BluetoothConnectionState.disconnected) {
+            debugPrint('Failed to reconnect to device');
+            return false;
+          }
+        }
+      }
+      
       // Ensure services are discovered
       await bleDevice.device.discoverServices();
       List<BluetoothService> services = await bleDevice.device.services.first;

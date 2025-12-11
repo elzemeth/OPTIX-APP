@@ -62,6 +62,8 @@ SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 
 BLUEZ_SERVICE_NAME = 'org.bluez'
 GATT_MANAGER_IFACE = 'org.bluez.GattManager1'
+LE_ADVERTISING_MANAGER_IFACE = 'org.bluez.LEAdvertisingManager1'
+LE_ADVERTISEMENT_IFACE = 'org.bluez.LEAdvertisement1'
 DBUS_OM_IFACE = 'org.freedesktop.DBus.ObjectManager'
 DBUS_PROP_IFACE = 'org.freedesktop.DBus.Properties'
 GATT_SERVICE_IFACE = 'org.bluez.GattService1'
@@ -376,6 +378,41 @@ class CommandCharacteristic(Characteristic):
         except Exception as e:
             logger.error(f'❌ Command processing error: {e}')
 
+class Advertisement(dbus.service.Object):
+    PATH_BASE = '/org/bluez/optix/advertisement'
+
+    def __init__(self, bus, index, optix_system):
+        self.path = self.PATH_BASE + str(index)
+        self.bus = bus
+        self.ad_type = 'peripheral'
+        self.service_uuids = [WIFI_SERVICE_UUID]
+        self.local_name = 'OPTIX'
+        self.optix_system = optix_system
+        dbus.service.Object.__init__(self, bus, self.path)
+
+    def get_properties(self):
+        return {
+            LE_ADVERTISEMENT_IFACE: {
+                'Type': self.ad_type,
+                'ServiceUUIDs': dbus.Array(self.service_uuids, signature='s'),
+                'LocalName': dbus.String(self.local_name),
+                'IncludeTxPower': dbus.Boolean(False),
+            }
+        }
+
+    def get_path(self):
+        return dbus.ObjectPath(self.path)
+
+    @dbus.service.method(DBUS_PROP_IFACE, in_signature='s', out_signature='a{sv}')
+    def GetAll(self, interface):
+        if interface != LE_ADVERTISEMENT_IFACE:
+            raise InvalidArgsException()
+        return self.get_properties()[LE_ADVERTISEMENT_IFACE]
+
+    @dbus.service.method(LE_ADVERTISEMENT_IFACE, in_signature='', out_signature='')
+    def Release(self):
+        logger.info('📡 Advertisement released')
+
 # =======================
 #  CAMERA SYSTEM
 # =======================
@@ -508,6 +545,9 @@ class OptixSystem:
         self.streaming_active = False
         self.mainloop = None
         self.status_characteristic = None  # Will be set by BLE service
+        self.advertisement = None  # Will be set by BLE service
+        self.bus = None  # Will be set by BLE service
+        self.adapter = None  # Will be set by BLE service
         
         logger.info(f"🤖 OPTIX System initialized")
         logger.info(f"🔢 Serial: {self.serial_number}")
@@ -787,8 +827,9 @@ network={{
             except (subprocess.TimeoutExpired, FileNotFoundError) as e:
                 logger.warning(f"bluetoothctl commands failed: {e}")
             
-            # Note: LE advertising is automatically handled by BlueZ when GATT service is registered
-            logger.info("✅ Bluetooth setup complete - GATT service will handle LE advertising")
+            # Note: LE advertising is automatically started by BlueZ when GATT service is registered
+            # Modern BlueZ handles this automatically - no need for hciconfig leadv
+            logger.info("✅ Bluetooth setup complete - GATT service will start LE advertising automatically")
             
             return True
             
@@ -829,7 +870,21 @@ network={{
                                           reply_handler=self.register_app_cb,
                                           error_handler=self.register_app_error_cb)
             
+            # Create and register LE advertisement
+            self.advertisement = Advertisement(bus, 0, self)
+            le_advertising_manager = dbus.Interface(
+                bus.get_object(BLUEZ_SERVICE_NAME, adapter),
+                LE_ADVERTISING_MANAGER_IFACE)
+            
+            le_advertising_manager.RegisterAdvertisement(
+                self.advertisement.get_path(),
+                {},
+                reply_handler=self.register_advertisement_cb,
+                error_handler=self.register_advertisement_error_cb)
+            
             self.ble_active = True
+            self.bus = bus  # Store bus for later use
+            self.adapter = adapter  # Store adapter for later use
             logger.info("✅ BLE service started!")
             
             # Start main loop in thread
@@ -867,19 +922,39 @@ network={{
     
     def register_app_cb(self):
         logger.info('✅ GATT application registered!')
-        logger.info('📡 BLE advertising should be active now')
-        # Verify advertising status
-        try:
-            result = subprocess.run(['bluetoothctl', 'show'], capture_output=True, text=True, timeout=3)
-            if 'Discoverable: yes' in result.stdout or 'Advertising: yes' in result.stdout:
-                logger.info('✅ Bluetooth advertising confirmed active')
-            else:
-                logger.warning('⚠️ Advertising status unclear - check manually with: bluetoothctl show')
-        except Exception as e:
-            logger.debug(f'Could not verify advertising status: {e}')
     
     def register_app_error_cb(self, error):
         logger.error(f'❌ GATT registration failed: {error}')
+    
+    def register_advertisement_cb(self):
+        logger.info('✅ LE Advertisement registered!')
+        logger.info('📡 LE advertising should be active now')
+        
+        # Verify advertising status
+        def verify_advertising():
+            time.sleep(2)  # Give BlueZ time to start advertising
+            try:
+                result = subprocess.run(['bluetoothctl', 'show'], capture_output=True, text=True, timeout=3)
+                output = result.stdout
+                if 'Discoverable: yes' in output:
+                    logger.info('✅ Bluetooth discoverable confirmed')
+                if 'Advertising Features' in output:
+                    # Check for active advertising instances
+                    if 'ActiveInstances: 0x0' in output:
+                        logger.warning('⚠️ No active advertising instances - advertising may not have started')
+                    elif 'ActiveInstances: 0x' in output:
+                        logger.info('✅ LE advertising active (Advertisement registered)')
+                else:
+                    logger.warning('⚠️ Could not verify advertising status')
+            except Exception as e:
+                logger.debug(f'Could not verify advertising status: {e}')
+        
+        # Verify in background thread
+        threading.Thread(target=verify_advertising, daemon=True).start()
+    
+    def register_advertisement_error_cb(self, error):
+        logger.error(f'❌ LE Advertisement registration failed: {error}')
+        logger.warning('⚠️ LE advertising may not work - devices may not be discoverable')
     
     def start_camera_streaming(self, host: str = DEFAULT_SERVER_HOST, port: int = DEFAULT_SERVER_PORT):
         if self.streaming_active:

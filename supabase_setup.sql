@@ -35,8 +35,17 @@ CREATE INDEX IF NOT EXISTS idx_users_created_at ON public.users(created_at);
 ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
 
 -- 4. Create RLS policies for users table
+-- TR: Kullanıcılar kendi verilerine erişebilir | EN: Users can access their own data | RU: Пользователи могут получить доступ к своим данным
 CREATE POLICY "Users can access their own data" ON public.users
     FOR ALL USING (auth.uid()::text = id::text);
+
+-- TR: Yeni kullanıcı kaydı için INSERT izni (signup) | EN: Allow INSERT for new user registration (signup) | RU: Разрешить INSERT для регистрации нового пользователя (signup)
+CREATE POLICY "Allow signup" ON public.users
+    FOR INSERT WITH CHECK (true);
+
+-- TR: Kullanıcılar kendi verilerini güncelleyebilir | EN: Users can update their own data | RU: Пользователи могут обновлять свои данные
+CREATE POLICY "Users can update their own data" ON public.users
+    FOR UPDATE USING (auth.uid()::text = id::text);
 
 -- 5. Single shared results table (per-user data separated by RLS)
 DROP TABLE IF EXISTS public.results CASCADE;
