@@ -474,6 +474,11 @@ class WiFiCredentialsHandler(FileSystemEventHandler):
             return
         
         logger.info(f"📨 Processing WiFi credentials for: {ssid}")
+        # TR: Zaten WiFi bağlıysa tekrar deneme | EN: If already connected, skip reconnect | RU: Если уже подключено к WiFi, не переподключаться
+        if SystemUtils.is_wifi_connected():
+            logger.info("✅ WiFi already connected, skipping reconfigure")
+            return
+
         # TR: Mevcut configure_wifi metodunu kullan | EN: Use existing configure_wifi method | RU: Использовать существующий метод configure_wifi
         self.optix_system.configure_wifi(ssid, password)
 
@@ -653,6 +658,36 @@ class OptixSystem:
         logger.info(f"🤖 OPTIX System initialized")
         logger.info(f"🔢 Serial: {self.serial_number}")
         logger.info(f"🔐 Hash: {self.device_hash}")
+
+    def ensure_advertising(self):
+        """TR: Reklam (advertising) aktif mi kontrol et, gerekirse yeniden başlat | EN: Ensure LE advertising is active, restart if needed | RU: Проверить, активно ли рекламирование, и перезапустить при необходимости"""
+        if not self.bus or not self.adapter:
+            return
+        try:
+            result = subprocess.run(['bluetoothctl', 'show'], capture_output=True, text=True, timeout=3)
+            output = result.stdout or ''
+            # ActiveInstances: 0x0 → reklam yok
+            if 'ActiveInstances: 0x0' in output:
+                logger.warning('⚠️ No active advertising instances - restarting advertisement')
+                le_advertising_manager = dbus.Interface(
+                    self.bus.get_object(BLUEZ_SERVICE_NAME, self.adapter),
+                    LE_ADVERTISING_MANAGER_IFACE)
+                # Eski reklamı kaldırmayı dene (başarısız olsa da sorun değil)
+                if self.advertisement:
+                    try:
+                        le_advertising_manager.UnregisterAdvertisement(self.advertisement.get_path())
+                        logger.info('ℹ️ Unregistered previous advertisement')
+                    except Exception as e:
+                        logger.debug(f'UnregisterAdvertisement skipped: {e}')
+                # Yeni reklam oluştur ve kaydet
+                self.advertisement = Advertisement(self.bus, 0, self)
+                le_advertising_manager.RegisterAdvertisement(
+                    self.advertisement.get_path(),
+                    {},
+                    reply_handler=self.register_advertisement_cb,
+                    error_handler=self.register_advertisement_error_cb)
+        except Exception as e:
+            logger.debug(f'ensure_advertising check failed: {e}')
     
     def configure_wifi(self, ssid: str, password: str) -> bool:
         """Configure WiFi connection"""
@@ -1187,6 +1222,9 @@ network={{
                     self.ble_active = False
                     self.start_ble_service()
 
+                # Reklam durduysa yeniden başlat
+                self.ensure_advertising()
+
                 wifi_connected = SystemUtils.is_wifi_connected()
                 
                 if wifi_connected:
@@ -1202,7 +1240,7 @@ network={{
                         self.streaming_active = False
                 
                 
-                time.sleep(30)
+                time.sleep(15)
                 
         except KeyboardInterrupt:
             logger.info("🛑 Shutting down...")
