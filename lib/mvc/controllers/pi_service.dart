@@ -49,14 +49,14 @@ class PiService {
       };
       final jsonContent = jsonEncode(credentials);
 
-      // TR: Önce SFTP ile yazmayı dene, başarısız olursa sudo ile yaz (arka planda otomatik) | EN: Try writing with SFTP first, if fails use sudo (automatic in background) | RU: Сначала попробовать записать через SFTP, если не удалось - использовать sudo (автоматически в фоне)
-      final sftpSuccess = await _writeWithSFTP(client, jsonContent, ssid);
-      if (sftpSuccess) {
+      // TR: Önce sudo ile direkt yaz (kullanıcı görmez), başarısız olursa SFTP'ye düş | EN: Try sudo direct write first (user never sees), if fails fallback to SFTP | RU: Сначала пробуем sudo-прямую запись, если не удалось — fallback на SFTP
+      final sudoSuccess = await _writeWithSudo(client, jsonContent, ssid);
+      if (sudoSuccess) {
         return true;
       }
-      
-      // TR: SFTP başarısız olursa sudo ile yaz (arka planda, kullanıcı görmez) | EN: If SFTP fails, write with sudo (in background, user doesn't see) | RU: Если SFTP не удался, записать с sudo (в фоне, пользователь не видит)
-      return await _writeWithSudo(client, jsonContent, ssid);
+
+      // TR: Sudo olmazsa SFTP ile dene (aynı path, /home/optix temp + sudo mv) | EN: If sudo fails, try SFTP (same path, /home/optix temp + sudo mv) | RU: Если sudo не удалось, пробуем SFTP (тот же путь, /home/optix temp + sudo mv)
+      return await _writeWithSFTP(client, jsonContent, ssid);
     } catch (e) {
       debugPrint('Error writing WiFi credentials: $e');
       if (client != null) {
@@ -83,11 +83,12 @@ class PiService {
       debugPrint('SFTP connected successfully');
 
       // TR: Geçici dosya oluştur | EN: Create temporary file | RU: Создать временный файл
-      final tempFile = File('${Directory.systemTemp.path}/wifi_credentials_${DateTime.now().millisecondsSinceEpoch}.json');
+      final timestamp = DateTime.now().millisecondsSinceEpoch;
+      final tempFile = File('${Directory.systemTemp.path}/wifi_credentials_$timestamp.json');
       await tempFile.writeAsString(jsonContent);
 
       // TR: SFTP ile önce home dizinine yükle (izin hatalarını azaltır) | EN: Upload to home via SFTP first (avoid permission issues) | RU: Сначала загрузить в домашний каталог (уменьшает ошибки прав)
-      const tempRemotePath = '/home/optix/wifi_credentials_temp.json';
+      final tempRemotePath = '/home/optix/wifi_credentials_temp_$timestamp.json';
       final uploadResult = await client.sftpUpload(
         path: tempFile.path,
         toPath: tempRemotePath,
