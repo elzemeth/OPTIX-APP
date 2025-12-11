@@ -415,8 +415,12 @@ class BleService {
         };
       }
 
-      // TR: Bağlanmayı dene | EN: Try to connect | RU: Попробовать подключиться
-      await bleDevice.device.connect(timeout: const Duration(seconds: 15));
+      // TR: Bağlanmayı dene (pairing olmadan) | EN: Try to connect (without pairing) | RU: Попробовать подключиться (без сопряжения)
+      // TR: autoConnect: false - Otomatik yeniden bağlanmayı engelle | EN: autoConnect: false - Prevent auto-reconnect | RU: autoConnect: false - Предотвратить автоматическое переподключение
+      await bleDevice.device.connect(
+        timeout: const Duration(seconds: 15),
+        autoConnect: false,
+      );
 
       // TR: Bağlantının kurulmasını bekle (timeout ile) | EN: Wait for connection with timeout | RU: Ждать подключения с таймаутом
       BluetoothConnectionState? finalState;
@@ -436,6 +440,10 @@ class BleService {
 
       if (finalState == BluetoothConnectionState.connected) {
         _updateStatus('Connected to ${bleDevice.name}');
+        
+        // TR: Bağlantı kurulduktan sonra servislerin hazır olması için bekle | EN: Wait for services to be ready after connection | RU: Ждать готовности сервисов после подключения
+        debugPrint('Waiting for services to be ready...');
+        await Future.delayed(const Duration(seconds: 2));
 
         // TR: Cihazdan seri numara almaya çalış | EN: Try to get serial number from device | RU: Попробовать получить серийный номер с устройства
         String? serialNumber = await _getSerialNumber(bleDevice.device);
@@ -478,9 +486,40 @@ class BleService {
     try {
       debugPrint('Getting serial number from device: ${device.platformName}');
 
-      // TR: Servislerin bulunmasını bekle | EN: Wait for services to be discovered | RU: Ждать обнаружения сервисов
-      await device.discoverServices();
-      List<BluetoothService> services = await device.services.first;
+      // TR: Servislerin bulunmasını bekle (retry ile) | EN: Wait for services to be discovered (with retry) | RU: Ждать обнаружения сервисов (с повторными попытками)
+      List<BluetoothService> services = [];
+      int retryCount = 0;
+      const maxRetries = 5;
+      
+      while (services.isEmpty && retryCount < maxRetries) {
+        try {
+          await device.discoverServices();
+          services = await device.services.first;
+          debugPrint('Found ${services.length} services (attempt ${retryCount + 1})');
+          
+          if (services.isEmpty) {
+            retryCount++;
+            if (retryCount < maxRetries) {
+              debugPrint('No services found, retrying in 1 second...');
+              await Future.delayed(const Duration(seconds: 1));
+            }
+          }
+        } catch (e) {
+          debugPrint('Service discovery error (attempt ${retryCount + 1}): $e');
+          retryCount++;
+          if (retryCount < maxRetries) {
+            await Future.delayed(const Duration(seconds: 1));
+          }
+        }
+      }
+
+      if (services.isEmpty) {
+        debugPrint('WiFi service not found after $maxRetries attempts - using fallback serial number');
+        String deviceId = device.remoteId.toString();
+        String fallbackSerial = 'OPTIX_${deviceId.substring(0, 8).toUpperCase()}';
+        debugPrint('Using fallback serial number: $fallbackSerial');
+        return fallbackSerial;
+      }
 
       debugPrint('Found ${services.length} services');
 
@@ -498,7 +537,7 @@ class BleService {
       }
 
       if (wifiService == null) {
-        debugPrint('WiFi service not found - using fallback serial number');
+        debugPrint('WiFi service not found after discovery');
         // TR: Yedek: cihaz kimliğinden seri numarası üret | EN: Fallback: generate serial from device ID | RU: Резерв: сгенерировать серийный номер из ID устройства
         String deviceId = device.remoteId.toString();
         String fallbackSerial = 'OPTIX_${deviceId.substring(0, 8).toUpperCase()}';
@@ -622,9 +661,37 @@ class BleService {
         }
       }
       
-      // Ensure services are discovered
-      await bleDevice.device.discoverServices();
-      List<BluetoothService> services = await bleDevice.device.services.first;
+      // TR: Servislerin keşfedilmesini bekle (retry ile) | EN: Wait for services to be discovered (with retry) | RU: Ждать обнаружения сервисов (с повторными попытками)
+      List<BluetoothService> services = [];
+      int retryCount = 0;
+      const maxRetries = 5;
+      
+      while (services.isEmpty && retryCount < maxRetries) {
+        try {
+          await bleDevice.device.discoverServices();
+          services = await bleDevice.device.services.first;
+          debugPrint('Found ${services.length} services for WiFi (attempt ${retryCount + 1})');
+          
+          if (services.isEmpty) {
+            retryCount++;
+            if (retryCount < maxRetries) {
+              debugPrint('No services found, retrying in 1 second...');
+              await Future.delayed(const Duration(seconds: 1));
+            }
+          }
+        } catch (e) {
+          debugPrint('Service discovery error (attempt ${retryCount + 1}): $e');
+          retryCount++;
+          if (retryCount < maxRetries) {
+            await Future.delayed(const Duration(seconds: 1));
+          }
+        }
+      }
+      
+      if (services.isEmpty) {
+        debugPrint('WiFi service not found after $maxRetries attempts');
+        return false;
+      }
 
       BluetoothService? wifiService;
       for (final s in services) {

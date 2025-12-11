@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../controllers/ble_service.dart';
 import '../controllers/auth_service.dart';
+import '../controllers/pi_service.dart';
 import 'login/login_screen.dart';
 
 class FirstTimeUserScreen extends StatefulWidget {
@@ -15,6 +16,7 @@ class FirstTimeUserScreen extends StatefulWidget {
 class _FirstTimeUserScreenState extends State<FirstTimeUserScreen> {
   final BleService _bleService = BleService();
   final AuthService _authService = AuthService();
+  final PiService _piService = PiService();
   
   bool _scanning = false;
   List<BleDevice> _devices = [];
@@ -83,14 +85,20 @@ class _FirstTimeUserScreenState extends State<FirstTimeUserScreen> {
       return;
     }
 
-    final ok = await _bleService.sendWifiCredentials(device, ssid, password);
+    // TR: WiFi bilgilerini Pi'ye dosya olarak yaz (SSH ile) | EN: Write WiFi credentials to Pi as file (via SSH) | RU: Записать учетные данные WiFi в Pi как файл (через SSH)
+    messenger.showSnackBar(
+      const SnackBar(content: Text('WiFi bilgileri Pi\'ye gönderiliyor...')),
+    );
+    
+    final ok = await _piService.writeWifiCredentials(ssid, password);
     if (!mounted) return;
 
     messenger.showSnackBar(
       SnackBar(
         content: Text(ok
-            ? 'WiFi bilgileri gönderildi.'
-            : 'WiFi bilgileri gönderilemedi. Tekrar deneyin.'),
+            ? 'WiFi bilgileri Pi\'ye gönderildi. Pi WiFi\'yi yapılandırıyor...'
+            : 'WiFi bilgileri gönderilemedi. Pi bağlantısını kontrol edin.'),
+        duration: Duration(seconds: ok ? 3 : 5),
       ),
     );
   }

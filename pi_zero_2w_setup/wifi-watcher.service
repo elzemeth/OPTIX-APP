@@ -1,0 +1,22 @@
+[Unit]
+Description=OPTIX WiFi Credentials File Watcher
+After=network.target
+
+[Service]
+Type=simple
+User=root
+Group=root
+WorkingDirectory=/home/optix/pi_zero_2w_setup
+Environment="PYTHONPATH=/home/optix/pi_zero_2w_setup"
+ExecStart=/usr/bin/python3 /home/optix/pi_zero_2w_setup/wifi_file_watcher.py
+Restart=always
+RestartSec=3
+StandardOutput=journal
+StandardError=journal
+
+# Security and permissions
+ReadWritePaths=/tmp /etc/wpa_supplicant
+
+[Install]
+WantedBy=multi-user.target
+

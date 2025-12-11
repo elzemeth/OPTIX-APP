@@ -19,6 +19,7 @@ import threading
 import requests
 from dataclasses import dataclass
 from typing import Optional, Tuple
+from pathlib import Path
 
 import dbus
 import dbus.exceptions
@@ -45,6 +46,13 @@ except ImportError:
             self.running = False
     class GLib:
         MainLoop = SimpleMainLoop
+
+try:
+    from watchdog.observers import Observer
+    from watchdog.events import FileSystemEventHandler
+    HAS_WATCHDOG = True
+except ImportError:
+    HAS_WATCHDOG = False
 
 logging.basicConfig(
     level=logging.INFO,
@@ -378,6 +386,88 @@ class CommandCharacteristic(Characteristic):
         except Exception as e:
             logger.error(f'❌ Command processing error: {e}')
 
+# =======================
+#  WIFI FILE WATCHER
+# =======================
+
+WIFI_CREDENTIALS_FILE = '/tmp/wifi_credentials.json'
+
+class WiFiCredentialsHandler(FileSystemEventHandler):
+    """TR: WiFi credentials dosya değişikliklerini izle | EN: Monitor WiFi credentials file changes | RU: Мониторинг изменений файла учетных данных WiFi"""
+    
+    def __init__(self, optix_system):
+        self.optix_system = optix_system
+        self.last_hash = self._get_file_hash()
+        logger.info(f"📁 Watching {WIFI_CREDENTIALS_FILE}")
+    
+    def _get_file_hash(self):
+        """TR: Dosya hash'ini al (değişiklik tespiti için) | EN: Get file hash (for change detection) | RU: Получить хэш файла (для обнаружения изменений)"""
+        try:
+            if os.path.exists(WIFI_CREDENTIALS_FILE):
+                with open(WIFI_CREDENTIALS_FILE, 'r') as f:
+                    content = f.read()
+                    return hash(content)
+        except Exception as e:
+            logger.debug(f"Error getting file hash: {e}")
+        return None
+    
+    def _read_credentials(self):
+        """TR: WiFi credentials dosyasını oku | EN: Read WiFi credentials from file | RU: Прочитать учетные данные WiFi из файла"""
+        try:
+            if not os.path.exists(WIFI_CREDENTIALS_FILE):
+                return None
+            
+            with open(WIFI_CREDENTIALS_FILE, 'r') as f:
+                data = json.load(f)
+                return {
+                    'ssid': data.get('ssid', ''),
+                    'password': data.get('password', ''),
+                    'timestamp': data.get('timestamp', '')
+                }
+        except Exception as e:
+            logger.error(f"❌ Error reading credentials: {e}")
+            return None
+    
+    def on_modified(self, event):
+        """TR: Dosya değişikliği işle | EN: Handle file modification | RU: Обработать изменение файла"""
+        if event.src_path == WIFI_CREDENTIALS_FILE:
+            logger.info("📝 WiFi credentials file modified")
+            self._process_credentials()
+    
+    def on_created(self, event):
+        """TR: Dosya oluşturma işle | EN: Handle file creation | RU: Обработать создание файла"""
+        if event.src_path == WIFI_CREDENTIALS_FILE:
+            logger.info("📝 WiFi credentials file created")
+            self._process_credentials()
+    
+    def _process_credentials(self):
+        """TR: WiFi credentials dosyasını işle | EN: Process WiFi credentials from file | RU: Обработать учетные данные WiFi из файла"""
+        # TR: Dosyanın tamamen yazılması için bekle | EN: Wait for file to be fully written | RU: Ждать полной записи файла
+        time.sleep(0.5)
+        
+        current_hash = self._get_file_hash()
+        if current_hash == self.last_hash:
+            logger.debug("File hash unchanged, skipping")
+            return
+        
+        self.last_hash = current_hash
+        
+        credentials = self._read_credentials()
+        if not credentials:
+            logger.warning("⚠️ No credentials found in file")
+            return
+        
+        ssid = credentials.get('ssid', '')
+        password = credentials.get('password', '')
+        
+        if not ssid or not password:
+            logger.warning("⚠️ Invalid credentials (missing SSID or password)")
+            return
+        
+        logger.info(f"📨 Processing WiFi credentials for: {ssid}")
+        # TR: Mevcut configure_wifi metodunu kullan | EN: Use existing configure_wifi method | RU: Использовать существующий метод configure_wifi
+        self.optix_system.configure_wifi(ssid, password)
+
 class Advertisement(dbus.service.Object):
     PATH_BASE = '/org/bluez/optix/advertisement'
 
@@ -548,6 +638,8 @@ class OptixSystem:
         self.advertisement = None  # Will be set by BLE service
         self.bus = None  # Will be set by BLE service
         self.adapter = None  # Will be set by BLE service
+        self.wifi_watcher = None  # WiFi file watcher observer
+        self.wifi_watcher_thread = None  # WiFi watcher thread
         
         logger.info(f"🤖 OPTIX System initialized")
         logger.info(f"🔢 Serial: {self.serial_number}")
@@ -1022,8 +1114,58 @@ network={{
                 pass
             self.streaming_active = False
     
+    def start_wifi_watcher(self):
+        """TR: WiFi credentials dosya izleyicisini başlat | EN: Start WiFi credentials file watcher | RU: Запустить наблюдатель файла учетных данных WiFi"""
+        if not HAS_WATCHDOG:
+            logger.warning("⚠️ watchdog not available - WiFi file watcher disabled")
+            return
+        
+        try:
+            logger.info("📁 Starting WiFi credentials file watcher...")
+            
+            # TR: Dosyayı oluştur (yoksa) | EN: Create file if it doesn't exist | RU: Создать файл, если его нет
+            Path(WIFI_CREDENTIALS_FILE).touch(exist_ok=True)
+            
+            # TR: Event handler oluştur | EN: Create event handler | RU: Создать обработчик событий
+            event_handler = WiFiCredentialsHandler(self)
+            
+            # TR: Observer oluştur | EN: Create observer | RU: Создать наблюдатель
+            observer = Observer()
+            observer.schedule(
+                event_handler,
+                path=str(Path(WIFI_CREDENTIALS_FILE).parent),
+                recursive=False
+            )
+            
+            observer.start()
+            self.wifi_watcher = observer
+            logger.info("✅ WiFi file watcher started")
+            
+            # TR: Mevcut dosyayı işle (içerik varsa) | EN: Process existing file if it has content | RU: Обработать существующий файл, если он имеет содержимое
+            if os.path.getsize(WIFI_CREDENTIALS_FILE) > 0:
+                logger.info("📄 Processing existing credentials file...")
+                event_handler._process_credentials()
+                
+        except Exception as e:
+            logger.error(f"❌ WiFi watcher error: {e}")
+    
+    def stop_wifi_watcher(self):
+        """TR: WiFi credentials dosya izleyicisini durdur | EN: Stop WiFi credentials file watcher | RU: Остановить наблюдатель файла учетных данных WiFi"""
+        if self.wifi_watcher:
+            try:
+                self.wifi_watcher.stop()
+                self.wifi_watcher.join()
+                logger.info("🔴 WiFi file watcher stopped")
+            except Exception as e:
+                logger.error(f"Error stopping WiFi watcher: {e}")
+            finally:
+                self.wifi_watcher = None
+    
     def run(self):
         logger.info("🚀 OPTIX Smart Glasses starting...")
+        
+        # TR: WiFi file watcher'ı başlat | EN: Start WiFi file watcher | RU: Запустить наблюдатель файла WiFi
+        self.start_wifi_watcher()
         
         logger.info("🔵 Starting BLE service immediately...")
         self.start_ble_service()
@@ -1064,6 +1206,7 @@ network={{
         self.streaming_active = False
         if self.ble_active:
             self.stop_ble_service()
+        self.stop_wifi_watcher()
         logger.info("🧹 Cleanup completed")
 
 def main():
