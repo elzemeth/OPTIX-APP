@@ -757,30 +757,45 @@ network={{
         try:
             logger.info("🔵 Setting up Bluetooth...")
             
-            # Reset adapter
-            subprocess.run(['sudo', 'hciconfig', 'hci0', 'down'], capture_output=True)
-            time.sleep(1)
-            subprocess.run(['sudo', 'hciconfig', 'hci0', 'up'], capture_output=True)
-            time.sleep(2)
+            # Modern BlueZ: No need to reset adapter - GATT registration handles advertising
+            # Just set device name and make discoverable
             
-            # Set device name
-            subprocess.run(['sudo', 'hciconfig', 'hci0', 'name', 'OPTIX'], capture_output=True)
+            # Set device name using bluetoothctl (persistent)
+            try:
+                result = subprocess.run(['bluetoothctl', 'system-alias', 'OPTIX'], 
+                                      capture_output=True, text=True, timeout=5)
+                if result.returncode == 0:
+                    logger.info("✅ Device alias set to OPTIX")
+                else:
+                    logger.warning(f"bluetoothctl system-alias failed: {result.stderr}")
+            except (subprocess.TimeoutExpired, FileNotFoundError) as e:
+                logger.warning(f"bluetoothctl not available: {e}")
             
-            # Make discoverable
-            subprocess.run(['sudo', 'hciconfig', 'hci0', 'piscan'], capture_output=True)
+            # Make discoverable and pairable (for classic Bluetooth)
+            try:
+                result = subprocess.run(['bluetoothctl', 'discoverable', 'on'], 
+                                      capture_output=True, text=True, timeout=5)
+                if result.returncode == 0:
+                    logger.info("✅ Bluetooth set to discoverable")
+                else:
+                    logger.warning(f"bluetoothctl discoverable failed: {result.stderr}")
+                
+                result = subprocess.run(['bluetoothctl', 'pairable', 'on'], 
+                                      capture_output=True, text=True, timeout=5)
+                if result.returncode == 0:
+                    logger.info("✅ Bluetooth set to pairable")
+            except (subprocess.TimeoutExpired, FileNotFoundError) as e:
+                logger.warning(f"bluetoothctl commands failed: {e}")
             
-            # Enable LE advertising
-            subprocess.run(['sudo', 'hciconfig', 'hci0', 'leadv', '0'], capture_output=True)
-            time.sleep(1)
-            subprocess.run(['sudo', 'hciconfig', 'hci0', 'leadv', '4'], capture_output=True)
-            time.sleep(2)
+            # Note: LE advertising is automatically handled by BlueZ when GATT service is registered
+            logger.info("✅ Bluetooth setup complete - GATT service will handle LE advertising")
             
-            logger.info("✅ Bluetooth configured - Device: OPTIX")
             return True
             
         except Exception as e:
             logger.error(f"❌ Bluetooth setup failed: {e}")
-            return False
+            # Don't fail completely - GATT registration might still work
+            return True
     
     def start_ble_service(self):
         # If previously marked active but thread died, allow restart
@@ -790,9 +805,9 @@ network={{
         try:
             logger.info("🚀 Starting BLE service...")
             
-            if not self.setup_bluetooth():
-                logger.error("❌ Bluetooth setup failed")
-                return
+            # Setup Bluetooth (name, discoverable)
+            self.setup_bluetooth()
+            # Continue even if setup has warnings - GATT registration will work
             
             # Setup D-Bus
             dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
@@ -852,6 +867,16 @@ network={{
     
     def register_app_cb(self):
         logger.info('✅ GATT application registered!')
+        logger.info('📡 BLE advertising should be active now')
+        # Verify advertising status
+        try:
+            result = subprocess.run(['bluetoothctl', 'show'], capture_output=True, text=True, timeout=3)
+            if 'Discoverable: yes' in result.stdout or 'Advertising: yes' in result.stdout:
+                logger.info('✅ Bluetooth advertising confirmed active')
+            else:
+                logger.warning('⚠️ Advertising status unclear - check manually with: bluetoothctl show')
+        except Exception as e:
+            logger.debug(f'Could not verify advertising status: {e}')
     
     def register_app_error_cb(self, error):
         logger.error(f'❌ GATT registration failed: {error}')

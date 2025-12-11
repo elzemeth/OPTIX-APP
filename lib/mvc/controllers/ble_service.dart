@@ -278,14 +278,23 @@ class BleService {
           // TR: OPTIX servis UUID'lerini kontrol et | EN: Check for OPTIX service UUIDs | RU: Проверить сервисные UUID OPTIX
           if (result.advertisementData.serviceUuids.isNotEmpty) {
             for (Guid serviceUuid in result.advertisementData.serviceUuids) {
-              String uuidString = serviceUuid.toString().toLowerCase();
-              // TR: Bilinen OPTIX servis UUID'lerini kontrol et | EN: Check for known OPTIX service UUIDs | RU: Проверить известные сервисные UUID OPTIX
-              if (uuidString.contains('12345678-1234-5678-9abc-123456789abc') ||
-                  uuidString.contains('87654321-4321-4321-4321-cba987654321') ||
-                  uuidString.contains('11111111-2222-3333-4444-555555555555') ||
-                  uuidString.contains('66666666-7777-8888-9999-aaaaaaaaaaaa')) {
+              String uuidString = serviceUuid.toString().toLowerCase().replaceAll('-', '');
+              // TR: Bilinen OPTIX servis UUID'lerini kontrol et (tire olmadan) | EN: Check for known OPTIX service UUIDs (without dashes) | RU: Проверить известные сервисные UUID OPTIX (без дефисов)
+              final optixServiceUuid = '12345678-1234-5678-9abc-123456789abc'.toLowerCase().replaceAll('-', '');
+              final credentialUuid = '87654321-4321-4321-4321-cba987654321'.toLowerCase().replaceAll('-', '');
+              final statusUuid = '11111111-2222-3333-4444-555555555555'.toLowerCase().replaceAll('-', '');
+              final commandUuid = '66666666-7777-8888-9999-aaaaaaaaaaaa'.toLowerCase().replaceAll('-', '');
+              
+              if (uuidString == optixServiceUuid ||
+                  uuidString == credentialUuid ||
+                  uuidString == statusUuid ||
+                  uuidString == commandUuid ||
+                  uuidString.contains(optixServiceUuid) ||
+                  uuidString.contains(credentialUuid) ||
+                  uuidString.contains(statusUuid) ||
+                  uuidString.contains(commandUuid)) {
                 isOptixDevice = true;
-                debugPrint('Found OPTIX device by service UUID: $uuidString');
+                debugPrint('Found OPTIX device by service UUID: ${serviceUuid.toString()}');
                 break;
               }
             }
