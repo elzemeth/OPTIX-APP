@@ -28,11 +28,11 @@ class SupabaseService {
       client = Supabase.instance.client;
       debugPrint('Supabase initialized successfully');
     } catch (e) {
-      // Handle initialization errors gracefully
+      // TR: Başlatma hatalarını nazikçe ele al | EN: Handle initialization errors gracefully | RU: Аккуратно обработать ошибки инициализации
       debugPrint('Supabase initialization failed: $e');
       debugPrint('Please check your .env file and ensure you have valid Supabase credentials.');
       debugPrint('You can get your credentials from your Supabase project dashboard.');
-      // Create a mock client or handle offline mode
+      // TR: Sahte istemci oluştur veya çevrimdışı modu yönet | EN: Create mock client or handle offline mode | RU: Создать фиктивный клиент или обработать офлайн режим
       rethrow;
     }
   }
@@ -53,7 +53,7 @@ class SupabaseService {
     await client.from('users').insert({'username': username, 'email': email});
   }
 
-  /// Get user-specific results from their table
+  /// TR: Kullanıcıya özel tablodan sonuçları al | EN: Get user-specific results from their table | RU: Получить результаты из пользовательской таблицы
   Future<List<Map<String, dynamic>>> getUserResults(String userId) async {
     final tableName = 'user_results_$userId';
     final response = await client
@@ -63,13 +63,13 @@ class SupabaseService {
     return List<Map<String, dynamic>>.from(response);
   }
 
-  /// Insert result into user-specific table
+  /// TR: Kullanıcıya özel tabloya sonuç ekle | EN: Insert result into user-specific table | RU: Вставить результат в пользовательскую таблицу
   Future<void> insertUserResult(String userId, Map<String, dynamic> result) async {
     final tableName = 'user_results_$userId';
     await client.from(tableName).insert(result);
   }
 
-  /// Get results by text type from user-specific table
+  /// TR: Kullanıcı tablosundan metin tipine göre sonuçları al | EN: Get results by text type from user-specific table | RU: Получить результаты по типу текста из пользовательской таблицы
   Future<List<Map<String, dynamic>>> getUserResultsByType(
     String userId, 
     String textType

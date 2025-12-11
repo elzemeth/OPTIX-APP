@@ -15,21 +15,21 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<void> _route() async {
-    // Add a delay to show splash screen
+    // TR: Splash ekranını göstermek için gecikme ekle | EN: Add delay to show splash screen | RU: Добавить задержку для показа заставки
     await Future.delayed(const Duration(seconds: 2));
     
     if (!mounted) return;
     
-    // Check if user is logged in
+    // TR: Kullanıcı giriş yapmış mı kontrol et | EN: Check if user is logged in | RU: Проверить, выполнен ли вход пользователя
     final isLoggedIn = await Storage.isLoggedIn();
     
     if (!mounted) return;
     
     if (isLoggedIn) {
-      // User is logged in, go to home
+      // TR: Kullanıcı giriş yapmış, ana sayfaya git | EN: User logged in, go to home | RU: Пользователь вошел, перейти на главную
       Navigator.pushReplacementNamed(context, '/home');
     } else {
-      // User not logged in, go to login
+      // TR: Kullanıcı giriş yapmamış, giriş ekranına git | EN: User not logged in, go to login | RU: Пользователь не вошел, перейти на вход
       Navigator.pushReplacementNamed(context, '/login');
     }
   }

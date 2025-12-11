@@ -1,10 +1,10 @@
 class AppStrings {
-  // App Info
+// TR: Uygulama bilgisi | EN: App info | RU: Информация о приложении
   static const String appName = 'OPTIX';
   static const String appTagline = 'Smart Glasses Companion';
   static const String appDescription = 'Connect with your smart glasses and manage your visual data';
   
-  // Navigation
+// TR: Gezinme | EN: Navigation | RU: Навигация
   static const String home = 'Home';
   static const String profile = 'Profile';
   static const String settings = 'Settings';
@@ -12,7 +12,7 @@ class AppStrings {
   static const String ocr = 'OCR';
   static const String scan = 'Scan';
   
-  // Authentication
+// TR: Kimlik doğrulama | EN: Authentication | RU: Аутентификация
   static const String login = 'Login';
   static const String signUp = 'Sign Up';
   static const String logout = 'Logout';
@@ -29,7 +29,7 @@ class AppStrings {
   static const String signupFailed = 'Sign up failed';
   static const String error = 'Error';
   
-  // BLE & Device
+// TR: BLE ve cihaz | EN: BLE & Device | RU: BLE и устройство
   static const String scanDevices = 'Scan Devices';
   static const String connectDevice = 'Connect Device';
   static const String disconnectDevice = 'Disconnect Device';
@@ -42,7 +42,7 @@ class AppStrings {
   static const String connected = 'Connected';
   static const String disconnected = 'Disconnected';
   
-  // Permissions
+// TR: İzinler | EN: Permissions | RU: Разрешения
   static const String bluetoothPermission = 'Bluetooth Permission';
   static const String locationPermission = 'Location Permission';
   static const String permissionRequired = 'Permission Required';
@@ -51,18 +51,18 @@ class AppStrings {
   static const String openSettings = 'Open Settings';
   static const String requestPermission = 'Request Permission';
   
-  // Text Types
+// TR: Metin türleri | EN: Text types | RU: Типы текста
   static const String rawText = 'Raw';
   static const String characterCorrected = 'Character Corrected';
   static const String meaningCorrected = 'Meaning Corrected';
   static const String selectTextType = 'Select Text Type';
   
-  // Time Buckets
+// TR: Zaman aralıkları | EN: Time buckets | RU: Временные интервалы
   static const String last3Hours = 'Last 3 Hours';
   static const String last6Hours = 'Last 6 Hours';
   static const String last24Hours = 'Last 24 Hours';
   
-  // Profile
+// TR: Profil | EN: Profile | RU: Профиль
   static const String editProfile = 'Edit Profile';
   static const String changePassword = 'Change Password';
   static const String notificationSettings = 'Notification Settings';
@@ -72,19 +72,19 @@ class AppStrings {
   static const String newPassword = 'New Password';
   static const String confirmNewPassword = 'Confirm New Password';
   
-  // Notifications
+// TR: Bildirimler | EN: Notifications | RU: Уведомления
   static const String pushNotifications = 'Push Notifications';
   static const String emailNotifications = 'Email Notifications';
   static const String notificationSettingsDesc = 'Manage your notification preferences';
   
-  // Results
+// TR: Sonuçlar | EN: Results | RU: Результаты
   static const String noResults = 'No results found';
   static const String loadingResults = 'Loading results...';
   static const String confidence = 'Confidence';
   static const String createdAt = 'Created At';
   static const String textContent = 'Text Content';
   
-  // Errors
+// TR: Hatalar | EN: Errors | RU: Ошибки
   static const String errorOccurred = 'An error occurred';
   static const String networkError = 'Network error';
   static const String loginError = 'Login failed';
@@ -92,14 +92,14 @@ class AppStrings {
   static const String connectionError = 'Connection failed';
   static const String permissionError = 'Permission error';
   
-  // Success Messages
+// TR: Başarı mesajları | EN: Success messages | RU: Сообщения об успехе
   static const String loginSuccess = 'Login successful';
   static const String signupSuccess = 'Signup successful';
   static const String profileUpdated = 'Profile updated successfully';
   static const String passwordChanged = 'Password changed successfully';
   static const String settingsSaved = 'Settings saved successfully';
   
-  // Validation Messages
+// TR: Doğrulama mesajları | EN: Validation messages | RU: Сообщения валидации
   static const String usernameRequired = 'Username is required';
   static const String emailRequired = 'Email is required';
   static const String passwordRequired = 'Password is required';
@@ -109,7 +109,7 @@ class AppStrings {
   static const String usernameExists = 'Username already exists';
   static const String invalidCredentials = 'Invalid username or password';
   
-  // Buttons
+// TR: Butonlar | EN: Buttons | RU: Кнопки
   static const String save = 'Save';
   static const String cancel = 'Cancel';
   static const String delete = 'Delete';
@@ -121,7 +121,7 @@ class AppStrings {
   static const String refresh = 'Refresh';
   static const String close = 'Close';
   
-  // Status Messages
+// TR: Durum mesajları | EN: Status messages | RU: Сообщения о состоянии
   static const String loading = 'Loading...';
   static const String saving = 'Saving...';
   static const String processing = 'Processing...';

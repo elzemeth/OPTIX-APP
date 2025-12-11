@@ -27,7 +27,7 @@ class _AppDrawerState extends State<AppDrawer> {
         _user = AuthService.currentUser;
       });
     } catch (e) {
-      // Handle error silently
+      // TR: Hatayı sessizce ele al | EN: Handle error silently | RU: Обработать ошибку без вывода
     }
   }
 

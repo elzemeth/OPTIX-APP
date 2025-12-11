@@ -44,19 +44,19 @@ class BleService {
 
     try {
       if (Platform.isAndroid) {
-        // For Android, we need location and BLE permissions
+        // TR: Android için konum ve BLE izinleri gerekir | EN: For Android we need location and BLE permissions | RU: Для Android нужны разрешения на локацию и BLE
         List<Permission> permissions = [
           Permission.location,
           Permission.bluetoothScan,
           Permission.bluetoothConnect,
         ];
 
-        // Request permissions one by one to ensure pop-ups appear
+        // TR: İzin istemlerini açmak için tek tek iste | EN: Request permissions one by one to show pop-ups | RU: Запрашивай разрешения по одному, чтобы появились окна
         for (Permission permission in permissions) {
           final currentStatus = await permission.status;
           debugPrint('Current $permission status: $currentStatus');
 
-          // Only request if not already granted
+          // TR: Sadece verilmemişse iste | EN: Only request if not already granted | RU: Запрашивать только если не выдано
           if (!currentStatus.isGranted) {
             await permission
               .onDeniedCallback(() {
@@ -88,10 +88,10 @@ class BleService {
           }
         }
       } else if (Platform.isIOS) {
-        // For iOS 18.6.2, we need both location and Bluetooth permissions
+        // TR: iOS 18.6.2 için hem konum hem Bluetooth izinleri gerekir | EN: For iOS 18.6.2 we need both location and Bluetooth permissions | RU: Для iOS 18.6.2 нужны разрешения на локацию и Bluetooth
         debugPrint('iOS 18.6.2: Requesting permissions...');
 
-        // Check and request location permission
+        // TR: Konum iznini kontrol et ve iste | EN: Check and request location permission | RU: Проверить и запросить разрешение на локацию
         final locationStatus = await Permission.location.status;
         debugPrint('iOS Location permission status: $locationStatus');
 
@@ -126,7 +126,7 @@ class BleService {
           debugPrint('iOS Location permission already granted');
         }
 
-        // For iOS 18.6.2, also check Bluetooth permission
+        // TR: iOS 18.6.2 için Bluetooth iznini de kontrol et | EN: For iOS 18.6.2 also check Bluetooth permission | RU: Для iOS 18.6.2 также проверить разрешение Bluetooth
         try {
           final bluetoothStatus = await Permission.bluetooth.status;
           debugPrint('iOS Bluetooth permission status: $bluetoothStatus');
@@ -163,10 +163,10 @@ class BleService {
           }
         } catch (e) {
           debugPrint('iOS Bluetooth permission check failed: $e');
-          // Continue without Bluetooth permission check if it fails
+          // TR: Kontrol başarısızsa Bluetooth izinsiz devam et | EN: Continue without Bluetooth permission check if it fails | RU: Продолжить без проверки Bluetooth, если она не удалась
         }
       } else {
-        // For other platforms, try basic permissions
+        // TR: Diğer platformlar için temel izinleri dene | EN: For other platforms try basic permissions | RU: Для прочих платформ запрашивать базовые разрешения
         await Permission.location
           .onDeniedCallback(() {
             debugPrint('Location permission denied');
@@ -225,15 +225,15 @@ class BleService {
 
     _updateStatus('Initializing BLE scan...');
 
-    // Check if we can proceed with scanning
+    // TR: Tarama yapabilir miyiz kontrol et | EN: Check if we can proceed with scanning | RU: Проверить, можем ли начать сканирование
     if (!await canProceedWithScanning()) {
       return;
     }
 
-    // Request permissions (but don't block if they're already handled)
+    // TR: İzin iste (zaten verildiyse bloklama) | EN: Request permissions without blocking if already handled | RU: Запросить разрешения, не блокируя, если уже выданы
     await _requestPermissions();
 
-    // Check Bluetooth state
+    // TR: Bluetooth durumunu kontrol et | EN: Check Bluetooth state | RU: Проверить состояние Bluetooth
     if (!await _checkBluetoothState()) {
       _updateStatus('Bluetooth check failed');
       return;
@@ -256,14 +256,14 @@ class BleService {
               ? device.platformName 
               : device.remoteId.toString();
 
-          // Debug: Log all discovered devices
+          // TR: Hata ayıklama: bulunan tüm cihazları logla | EN: Debug: log all discovered devices | RU: Отладка: логировать все найденные устройства
           debugPrint('Discovered device: $deviceName (RSSI: ${result.rssi})');
           debugPrint('Service UUIDs: ${result.advertisementData.serviceUuids}');
           debugPrint('Manufacturer Data: ${result.advertisementData.manufacturerData}');
 
           bool isOptixDevice = false;
 
-          // Check device name for OPTIX
+          // TR: Cihaz adında OPTIX var mı kontrol et | EN: Check device name for OPTIX | RU: Проверить, есть ли OPTIX в имени устройства
           if (deviceName.toUpperCase().startsWith(AppConstants.bleDeviceNamePrefix) ||
               deviceName.toLowerCase().contains('smartglasses') ||
               deviceName.toLowerCase().contains('wifi manager')) {
@@ -271,11 +271,11 @@ class BleService {
             debugPrint('Found OPTIX device by name: $deviceName');
           }
 
-          // Check for OPTIX service UUIDs
+          // TR: OPTIX servis UUID'lerini kontrol et | EN: Check for OPTIX service UUIDs | RU: Проверить сервисные UUID OPTIX
           if (result.advertisementData.serviceUuids.isNotEmpty) {
             for (Guid serviceUuid in result.advertisementData.serviceUuids) {
               String uuidString = serviceUuid.toString().toLowerCase();
-              // Check for known OPTIX service UUIDs
+              // TR: Bilinen OPTIX servis UUID'lerini kontrol et | EN: Check for known OPTIX service UUIDs | RU: Проверить известные сервисные UUID OPTIX
               if (uuidString.contains('12345678-1234-5678-9abc-123456789abc') ||
                   uuidString.contains('87654321-4321-4321-4321-cba987654321') ||
                   uuidString.contains('11111111-2222-3333-4444-555555555555') ||
@@ -287,7 +287,7 @@ class BleService {
             }
           }
 
-          // Check manufacturer data for OPTIX
+          // TR: Üretici verilerinde OPTIX var mı bak | EN: Check manufacturer data for OPTIX | RU: Проверить данные производителя на наличие OPTIX
           if (result.advertisementData.manufacturerData.isNotEmpty) {
             for (var entry in result.advertisementData.manufacturerData.entries) {
               if (entry.value.toString().toLowerCase().contains('optix')) {
@@ -306,7 +306,7 @@ class BleService {
               device: device,
             );
 
-            // Check if device already exists
+            // TR: Cihaz listede var mı kontrol et | EN: Check if device already exists | RU: Проверить, есть ли устройство уже в списке
             final existingIndex = _devices.indexWhere((d) => d.id == bleDevice.id);
             if (existingIndex >= 0) {
               _devices[existingIndex] = bleDevice;
@@ -321,7 +321,7 @@ class BleService {
         _updateStatus('Found ${_devices.length} OPTIX devices');
       });
 
-      // Auto-stop after 15 seconds
+      // TR: 15 saniye sonra otomatik durdur | EN: Auto-stop after 15 seconds | RU: Автоостановка через 15 секунд
       Timer(const Duration(seconds: 15), () {
         if (_isScanning) {
           stopScan();
@@ -350,12 +350,12 @@ class BleService {
 
       await bleDevice.device.connect();
 
-      // Wait for connection to be established
+      // TR: Bağlantının kurulmasını bekle | EN: Wait for connection to be established | RU: Ждать установления соединения
       await for (final state in bleDevice.device.connectionState) {
         if (state == BluetoothConnectionState.connected) {
           _updateStatus('Connected to ${bleDevice.name}');
 
-          // Try to get serial number from device
+          // TR: Cihazdan seri numara almaya çalış | EN: Try to get serial number from device | RU: Попробовать получить серийный номер с устройства
           String? serialNumber = await _getSerialNumber(bleDevice.device);
 
           if (serialNumber != null) {
@@ -403,13 +403,13 @@ class BleService {
     try {
       debugPrint('Getting serial number from device: ${device.platformName}');
 
-      // Wait for services to be discovered
+      // TR: Servislerin bulunmasını bekle | EN: Wait for services to be discovered | RU: Ждать обнаружения сервисов
       await device.discoverServices();
       List<BluetoothService> services = await device.services.first;
 
       debugPrint('Found ${services.length} services');
 
-      // Look for the WiFi service
+      // TR: WiFi servisini ara | EN: Look for the WiFi service | RU: Искать сервис WiFi
       BluetoothService? wifiService;
       for (BluetoothService service in services) {
         String serviceUuid = service.uuid.toString().toLowerCase();
@@ -424,14 +424,14 @@ class BleService {
 
       if (wifiService == null) {
         debugPrint('WiFi service not found - using fallback serial number');
-        // Fallback: Generate serial number based on device ID
+        // TR: Yedek: cihaz kimliğinden seri numarası üret | EN: Fallback: generate serial from device ID | RU: Резерв: сгенерировать серийный номер из ID устройства
         String deviceId = device.remoteId.toString();
         String fallbackSerial = 'OPTIX_${deviceId.substring(0, 8).toUpperCase()}';
         debugPrint('Using fallback serial number: $fallbackSerial');
         return fallbackSerial;
       }
 
-      // Find the command characteristic
+      // TR: Komut karakteristiğini bul | EN: Find the command characteristic | RU: Найти характеристику команды
       BluetoothCharacteristic? commandChar;
       for (BluetoothCharacteristic char in wifiService.characteristics) {
         String charUuid = char.uuid.toString().toLowerCase();
@@ -449,7 +449,7 @@ class BleService {
         return null;
       }
 
-      // Find the status characteristic for reading response
+      // TR: Yanıt okumak için durum karakteristiğini bul | EN: Find status characteristic for reading response | RU: Найти характеристику статуса для чтения ответа
       BluetoothCharacteristic? statusChar;
       for (BluetoothCharacteristic char in wifiService.characteristics) {
         String charUuid = char.uuid.toString().toLowerCase();
@@ -465,20 +465,20 @@ class BleService {
         return null;
       }
 
-      // Subscribe to status notifications
+      // TR: Durum bildirimlerine abone ol | EN: Subscribe to status notifications | RU: Подписаться на уведомления статуса
       await statusChar.setNotifyValue(true);
 
-      // Send get_serial command
+      // TR: get_serial komutunu gönder | EN: Send get_serial command | RU: Отправить команду get_serial
       debugPrint('Sending get_serial command...');
       String command = 'get_serial';
       List<int> commandBytes = command.codeUnits;
       await commandChar.write(commandBytes, withoutResponse: true);
 
-      // Wait for response
+      // TR: Yanıtı bekle | EN: Wait for response | RU: Ждать ответа
       debugPrint('Waiting for serial number response...');
       String? serialNumber;
 
-      // Listen for notifications for up to 10 seconds
+      // TR: 10 saniyeye kadar bildirimleri dinle | EN: Listen for notifications up to 10 seconds | RU: Слушать уведомления до 10 секунд
       StreamSubscription? subscription;
       Completer<String?> completer = Completer<String?>();
 
@@ -497,7 +497,7 @@ class BleService {
         }
       });
 
-      // Wait for response with timeout
+      // TR: Zaman aşımıyla yanıt bekle | EN: Wait for response with timeout | RU: Ждать ответ с тайм-аутом
       try {
         serialNumber = await completer.future.timeout(
           Duration(seconds: 10),
@@ -556,7 +556,7 @@ class BleService {
 
     try {
       if (Platform.isAndroid) {
-        // For Android, request all BLE permissions
+        // TR: Android için tüm BLE izinlerini iste | EN: For Android request all BLE permissions | RU: Для Android запросить все разрешения BLE
         List<Permission> permissions = [
           Permission.location,
           Permission.bluetoothScan,
@@ -571,19 +571,20 @@ class BleService {
         });
 
       } else if (Platform.isIOS) {
-        // For iOS, we need to trigger the actual Bluetooth permission request
-        // by initializing the Bluetooth adapter, not just requesting location
+        // TR: iOS'ta Bluetooth iznini tetiklemek için adaptörü başlatmak gerekir
+        // EN: On iOS we must trigger Bluetooth permission by initializing the adapter
+        // RU: На iOS нужно вызвать запрос Bluetooth, инициализируя адаптер
         try {
-          // This will trigger the iOS Bluetooth permission dialog
+          // TR: Bu, iOS Bluetooth izin penceresini açar | EN: This triggers the iOS Bluetooth permission dialog | RU: Это вызывает диалог разрешения Bluetooth на iOS
           final adapterState = await FlutterBluePlus.adapterState.first;
           debugPrint('iOS Bluetooth adapter state: $adapterState');
 
-          // Also request location permission
+          // TR: Ayrıca konum izni iste | EN: Also request location permission | RU: Также запросить разрешение на локацию
           final locationStatus = await Permission.location.request();
           debugPrint('iOS location permission: $locationStatus');
         } catch (e) {
           debugPrint('iOS Bluetooth initialization error: $e');
-          // Even if there's an error, this might have triggered the permission dialog
+          // TR: Hata olsa bile izin penceresini tetiklemiş olabilir | EN: Even on error this may have triggered the permission dialog | RU: Даже при ошибке это могло вызвать диалог разрешений
         }
       }
 
@@ -601,13 +602,13 @@ class BleService {
       
       debugPrint('Permission check - Location: $locationStatus, BluetoothScan: $bluetoothScanStatus, BluetoothConnect: $bluetoothConnectStatus');
       
-      // If Bluetooth permissions are permanently denied, we cannot proceed
+      // TR: Bluetooth izinleri kalıcı reddedildiyse devam edemeyiz | EN: If Bluetooth permissions are permanently denied, we cannot proceed | RU: Если разрешения Bluetooth навсегда отклонены, продолжать нельзя
       if (bluetoothScanStatus.isPermanentlyDenied || bluetoothConnectStatus.isPermanentlyDenied) {
         _updateStatus('Bluetooth permissions are permanently denied.\n\n${getPermissionInstructions()}');
         return false;
       }
       
-      // If location is permanently denied, we also cannot proceed
+      // TR: Konum izni kalıcı reddedildiyse devam edemeyiz | EN: If location is permanently denied, we also cannot proceed | RU: Если локация навсегда отклонена, тоже нельзя продолжать
       if (locationStatus.isPermanentlyDenied) {
         _updateStatus('Location permission is permanently denied.\n\n${getPermissionInstructions()}');
         return false;

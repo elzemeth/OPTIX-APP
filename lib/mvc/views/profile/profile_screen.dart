@@ -30,7 +30,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         _user = AuthService.currentUser;
       });
     } catch (e) {
-      // Handle error silently
+      // TR: Hatayı sessizce ele al | EN: Handle error silently | RU: Обработать ошибку без вывода
     }
   }
 
@@ -86,7 +86,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               children: [
                 const SizedBox(height: 20),
                 
-                // Profile Header
+                // TR: Profil başlığı | EN: Profile header | RU: Заголовок профиля
                 _ProfileHeader(
                   user: _user,
                   cardBg: cardBg,
@@ -96,7 +96,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 
                 const SizedBox(height: 24),
                 
-                // Stats Cards
+                // TR: İstatistik kartları | EN: Stats cards | RU: Карточки статистики
                 _StatsSection(
                   cardBg: cardBg,
                   cs: cs,
@@ -104,7 +104,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 
                 const SizedBox(height: 24),
                 
-                // Profile Options
+                // TR: Profil seçenekleri | EN: Profile options | RU: Параметры профиля
                 _ProfileOptions(
                   cardBg: cardBg,
                   cs: cs,
@@ -115,7 +115,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 
                 const SizedBox(height: 24),
                 
-                // Settings Section
+                // TR: Ayarlar bölümü | EN: Settings section | RU: Раздел настроек
                 _SettingsSection(
                   cardBg: cardBg,
                   cs: cs,
@@ -153,7 +153,7 @@ class _ProfileHeader extends StatelessWidget {
         color: cardBg,
         child: Column(
           children: [
-            // Avatar with gradient background
+            // TR: Gradyan arka planlı avatar | EN: Avatar with gradient background | RU: Аватар с градиентным фоном
             Container(
               width: 100,
               height: 100,
@@ -186,7 +186,7 @@ class _ProfileHeader extends StatelessWidget {
             
             const SizedBox(height: 16),
             
-            // User Info
+            // TR: Kullanıcı bilgisi | EN: User info | RU: Информация о пользователе
             Text(
               user?.fullName ?? user?.username ?? '$AppConstants.brandName User',
               style: TextStyle(
@@ -208,7 +208,7 @@ class _ProfileHeader extends StatelessWidget {
             
             const SizedBox(height: 8),
             
-            // Status Badge
+            // TR: Durum rozeti | EN: Status badge | RU: Значок статуса
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -693,7 +693,7 @@ class _EditProfileDialogState extends State<_EditProfileDialog> {
     setState(() => _isLoading = true);
 
     try {
-      // Update user profile in Supabase
+      // TR: Supabase üzerinde kullanıcı profilini güncelle | EN: Update user profile in Supabase | RU: Обновить профиль пользователя в Supabase
       final response = await SupabaseService().client
           .from('users')
           .update({
@@ -704,11 +704,11 @@ class _EditProfileDialogState extends State<_EditProfileDialog> {
           .eq('id', widget.user?.id ?? '')
           .select();
 
-      // Convert PostgrestList to List<Map<String, dynamic>>
+      // TR: PostgrestList'i List<Map<String, dynamic>> biçimine çevir | EN: Convert PostgrestList to List<Map<String, dynamic>> | RU: Преобразовать PostgrestList в List<Map<String, dynamic>>
       final List<Map<String, dynamic>> responseList = List<Map<String, dynamic>>.from(response);
 
       if (responseList.isNotEmpty) {
-        // Update local user data
+        // TR: Yerel kullanıcı verisini güncelle | EN: Update local user data | RU: Обновить локальные данные пользователя
         await AuthService().loadUserFromStorage();
         
         if (mounted) {
@@ -824,13 +824,13 @@ class _ChangePasswordDialogState extends State<_ChangePasswordDialog> {
     setState(() => _isLoading = true);
 
     try {
-      // Verify current password
+      // TR: Mevcut şifreyi doğrula | EN: Verify current password | RU: Проверить текущий пароль
       final user = AuthService.currentUser;
       if (user == null) {
         throw Exception('User not found');
       }
 
-      // Check current password
+      // TR: Mevcut şifreyi kontrol et | EN: Check current password | RU: Проверить текущий пароль
       final currentPasswordHash = AuthService().hashPassword(_currentPasswordController.text);
       if (currentPasswordHash != user.passwordHash) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -839,7 +839,7 @@ class _ChangePasswordDialogState extends State<_ChangePasswordDialog> {
         return;
       }
 
-      // Update password in Supabase
+      // TR: Supabase üzerinde şifreyi güncelle | EN: Update password in Supabase | RU: Обновить пароль в Supabase
       final newPasswordHash = AuthService().hashPassword(_newPasswordController.text);
       await SupabaseService().client
           .from('users')
@@ -955,13 +955,13 @@ class _NotificationSettingsDialogState extends State<_NotificationSettingsDialog
     try {
       final user = AuthService.currentUser;
       if (user != null) {
-        // Load notification settings from Supabase
+        // TR: Bildirim ayarlarını Supabase'den yükle | EN: Load notification settings from Supabase | RU: Загрузить настройки уведомлений из Supabase
         final response = await SupabaseService().client
             .from('users')
             .select('notification_settings')
             .eq('id', user.id);
 
-        // Convert PostgrestList to List<Map<String, dynamic>>
+        // TR: PostgrestList'i List<Map<String, dynamic>> biçimine çevir | EN: Convert PostgrestList to List<Map<String, dynamic>> | RU: Преобразовать PostgrestList в List<Map<String, dynamic>>
         final List<Map<String, dynamic>> responseList = List<Map<String, dynamic>>.from(response);
 
         if (responseList.isNotEmpty && responseList.first['notification_settings'] != null) {
@@ -973,7 +973,7 @@ class _NotificationSettingsDialogState extends State<_NotificationSettingsDialog
         }
       }
     } catch (e) {
-      // Use default settings
+      // TR: Varsayılan ayarları kullan | EN: Use default settings | RU: Использовать настройки по умолчанию
     }
   }
 

@@ -13,7 +13,7 @@ class AuthService {
   static User? get currentUser => _currentUser;
   static String? get userSerialHash => _userSerialHash;
 
-  /// Check if a device is already connected to another account
+  /// TR: Cihazın başka bir hesaba bağlı olup olmadığını kontrol eder | EN: Check if device is linked to another account | RU: Проверяет, подключено ли устройство к другой учетной записи
   Future<bool> isDeviceConnectedToAnotherAccount(String deviceId) async {
     try {
       final response = await SupabaseService().client
@@ -26,7 +26,7 @@ class AuthService {
       
       if (responseList.isNotEmpty) {
         final existingUser = responseList.first;
-        // Check if it's not the current user
+        // TR: Geçerli kullanıcı değil mi kontrol et | EN: Check if not current user | RU: Проверить, что это не текущий пользователь
         if (_currentUser == null || existingUser['id'] != _currentUser!.id) {
           debugPrint('Device $deviceId is already connected to user: ${existingUser['username']}');
           return true;
@@ -39,7 +39,7 @@ class AuthService {
     }
   }
 
-  /// Connect a device to the current user account
+  /// TR: Cihazı mevcut kullanıcı hesabına bağlar | EN: Connect device to current user | RU: Подключает устройство к текущей учетной записи
   Future<bool> connectDevice(String deviceId, String deviceName, String deviceMacAddress) async {
     try {
       if (_currentUser == null) {
@@ -47,13 +47,13 @@ class AuthService {
         return false;
       }
 
-      // Check if device is already connected to another account
+      // TR: Cihaz başka hesaba bağlı mı kontrol et | EN: Check if device is linked to another account | RU: Проверить, привязано ли устройство к другой учетной записи
       if (await isDeviceConnectedToAnotherAccount(deviceId)) {
         debugPrint('Device is already connected to another account');
         return false;
       }
 
-      // Update user with device information
+      // TR: Kullanıcıyı cihaz bilgileriyle güncelle | EN: Update user with device info | RU: Обновить пользователя данными устройства
       final response = await SupabaseService().client
           .from('users')
           .update({
@@ -67,7 +67,7 @@ class AuthService {
 
       debugPrint('Device connection response: $response');
       
-      // Update local user data
+      // TR: Yerel kullanıcı verisini güncelle | EN: Update local user data | RU: Обновить локальные данные пользователя
       _currentUser = _currentUser!.copyWith(
         deviceId: deviceId,
         deviceName: deviceName,
@@ -76,7 +76,7 @@ class AuthService {
         updatedAt: DateTime.now(),
       );
       
-      // Save updated user data
+      // TR: Güncellenmiş kullanıcı verisini kaydet | EN: Save updated user data | RU: Сохранить обновленные данные пользователя
       await Storage.setUserData(_currentUser!.toJson());
       
       debugPrint('Device connected successfully to user: ${_currentUser!.username}');
@@ -87,7 +87,7 @@ class AuthService {
     }
   }
 
-  /// Disconnect device from current user
+  /// TR: Cihazı mevcut kullanıcıdan ayırır | EN: Disconnect device from current user | RU: Отключает устройство от текущего пользователя
   Future<bool> disconnectDevice() async {
     try {
       if (_currentUser == null) {
@@ -95,7 +95,7 @@ class AuthService {
         return false;
       }
 
-      // Update user to remove device information
+      // TR: Kullanıcıdan cihaz bilgilerini temizle | EN: Clear device info from user | RU: Очистить данные устройства у пользователя
       final response = await SupabaseService().client
           .from('users')
           .update({
@@ -109,7 +109,7 @@ class AuthService {
 
       debugPrint('Device disconnection response: $response');
       
-      // Update local user data
+      // TR: Yerel kullanıcı verisini güncelle | EN: Update local user data | RU: Обновить локальные данные пользователя
       _currentUser = _currentUser!.copyWith(
         deviceId: null,
         deviceName: null,
@@ -118,7 +118,7 @@ class AuthService {
         updatedAt: DateTime.now(),
       );
       
-      // Save updated user data
+      // TR: Güncellenmiş kullanıcı verisini kaydet | EN: Save updated user data | RU: Сохранить обновленные данные пользователя
       await Storage.setUserData(_currentUser!.toJson());
       
       debugPrint('Device disconnected successfully from user: ${_currentUser!.username}');
@@ -131,10 +131,10 @@ class AuthService {
 
   Future<bool> login(String username, String password) async {
     try {
-      // Hash the password
+      // TR: Şifreyi hashle | EN: Hash the password | RU: Хэшировать пароль
       final passwordHash = hashPassword(password);
       
-      // Query the database for user
+      // TR: Kullanıcı için veritabanını sorgula | EN: Query database for user | RU: Выполнить запрос пользователя в базе
       final response = await SupabaseService().client
           .from('users')
           .select()
@@ -142,7 +142,7 @@ class AuthService {
           .eq('password_hash', passwordHash)
           .eq('is_active', true);
       
-      // Convert PostgrestList to List<Map<String, dynamic>>
+      // TR: PostgrestList'i List<Map<String, dynamic>> biçimine çevir | EN: Convert PostgrestList to List<Map<String, dynamic>> | RU: Преобразовать PostgrestList в List<Map<String, dynamic>>
       final List<Map<String, dynamic>> responseList = List<Map<String, dynamic>>.from(response);
       
       if (responseList.isNotEmpty) {
@@ -150,10 +150,10 @@ class AuthService {
         await Storage.setLoggedIn(true);
         await Storage.setUserData(_currentUser!.toJson());
         
-        // Check if user has a serial number hash (from BLE connection)
+        // TR: Kullanıcının seri numara hash'i var mı kontrol et (BLE bağlantısından) | EN: Check if user has serial hash from BLE | RU: Проверить, есть ли у пользователя хэш серийного номера из BLE
         final serialHash = getSerialHash();
         if (serialHash != null) {
-          // Try to connect the device to this user account
+          // TR: Cihazı bu kullanıcı hesabına bağlamayı dene | EN: Try to connect device to this account | RU: Попробовать привязать устройство к этой учетной записи
           await connectDevice(serialHash, 'OPTIX Device', '');
         }
         
@@ -170,7 +170,7 @@ class AuthService {
     try {
       debugPrint('AuthService: Starting signup for $username');
       
-      // Check if user already exists
+      // TR: Kullanıcı zaten var mı kontrol et | EN: Check if user already exists | RU: Проверить, существует ли пользователь
       debugPrint('AuthService: Checking if user exists...');
       final existingUser = await SupabaseService().client
           .from('users')
@@ -183,7 +183,7 @@ class AuthService {
         return false; // User already exists
       }
       
-      // Check if email already exists
+      // TR: E-posta zaten var mı kontrol et | EN: Check if email already exists | RU: Проверить, существует ли email
       final existingEmail = await SupabaseService().client
           .from('users')
           .select()
@@ -197,11 +197,11 @@ class AuthService {
       
       debugPrint('AuthService: User does not exist, proceeding with signup');
       
-      // Hash the password
+      // TR: Şifreyi hashle | EN: Hash the password | RU: Хэшировать пароль
       final passwordHash = hashPassword(password);
       debugPrint('AuthService: Password hashed');
       
-      // Create new user
+      // TR: Yeni kullanıcı oluştur | EN: Create new user | RU: Создать нового пользователя
       debugPrint('AuthService: Creating user in database...');
       final response = await SupabaseService().client
           .from('users')
@@ -220,7 +220,7 @@ class AuthService {
       debugPrint('AuthService: Database response: $response');
       debugPrint('AuthService: Response type: ${response.runtimeType}');
       
-      // Convert PostgrestList to List<Map<String, dynamic>>
+      // TR: PostgrestList'i List<Map<String, dynamic>> biçimine çevir | EN: Convert PostgrestList to List<Map<String, dynamic>> | RU: Преобразовать PostgrestList в List<Map<String, dynamic>>
       final List<Map<String, dynamic>> responseList = List<Map<String, dynamic>>.from(response);
       
       if (responseList.isNotEmpty) {
@@ -240,10 +240,10 @@ class AuthService {
         await Storage.setLoggedIn(true);
         await Storage.setUserData(_currentUser!.toJson());
         
-        // Check if user has a serial number hash (from BLE connection)
+        // TR: Kullanıcının seri numara hash'i var mı kontrol et (BLE bağlantısından) | EN: Check if user has serial hash from BLE | RU: Проверить, есть ли у пользователя хэш серийного номера из BLE
         final serialHash = getSerialHash();
         if (serialHash != null) {
-          // Try to connect the device to this new user account
+          // TR: Cihazı bu yeni kullanıcıya bağlamayı dene | EN: Try to connect device to this new user | RU: Попробовать привязать устройство к этому новому пользователю
           await connectDevice(serialHash, 'OPTIX Device', '');
         }
         
@@ -260,14 +260,14 @@ class AuthService {
 
   Future<bool> loginWithBLE(String deviceId, String deviceName, String deviceMacAddress) async {
     try {
-      // Look for user with this BLE device
+      // TR: Bu BLE cihazıyla kullanıcı ara | EN: Look for user with this BLE device | RU: Найти пользователя с этим BLE устройством
       final response = await SupabaseService().client
           .from('users')
           .select()
           .eq('device_id', deviceId)
           .eq('is_active', true);
       
-      // Convert PostgrestList to List<Map<String, dynamic>>
+      // TR: PostgrestList'i List<Map<String, dynamic>> biçimine çevir | EN: Convert PostgrestList to List<Map<String, dynamic>> | RU: Преобразовать PostgrestList в List<Map<String, dynamic>>
       final List<Map<String, dynamic>> responseList = List<Map<String, dynamic>>.from(response);
       
       if (responseList.isNotEmpty) {
@@ -285,7 +285,7 @@ class AuthService {
 
   Future<bool> registerBLE(String username, String email, String deviceId, String deviceName, String deviceMacAddress) async {
     try {
-      // Check if user already exists
+      // TR: Kullanıcı zaten var mı kontrol et | EN: Check if user already exists | RU: Проверить, существует ли пользователь
       final existingUser = await SupabaseService().client
           .from('users')
           .select()
@@ -296,7 +296,7 @@ class AuthService {
         return false; // User already exists
       }
       
-      // Create new user with BLE device
+      // TR: BLE cihazıyla yeni kullanıcı oluştur | EN: Create new user with BLE device | RU: Создать нового пользователя с BLE устройством
       final response = await SupabaseService().client
           .from('users')
           .insert({
@@ -314,7 +314,7 @@ class AuthService {
           })
           .select();
       
-      // Convert PostgrestList to List<Map<String, dynamic>>
+      // TR: PostgrestList'i List<Map<String, dynamic>> biçimine çevir | EN: Convert PostgrestList to List<Map<String, dynamic>> | RU: Преобразовать PostgrestList в List<Map<String, dynamic>>
       final List<Map<String, dynamic>> responseList = List<Map<String, dynamic>>.from(response);
       
       if (responseList.isNotEmpty) {
@@ -343,18 +343,18 @@ class AuthService {
     await Storage.clear();
   }
   
-  /// Set the serial number hash for the current user
+  /// TR: Mevcut kullanıcı için seri numara hash'i ayarlar | EN: Set serial number hash for current user | RU: Устанавливает хэш серийного номера для текущего пользователя
   Future<void> setSerialNumber(String serialNumber) async {
     _userSerialHash = SerialHash.createHash(serialNumber);
     await Storage.setString('user_serial_hash', _userSerialHash!);
   }
   
-  /// Get the serial number hash for the current user
+  /// TR: Mevcut kullanıcının seri numara hash'ini getirir | EN: Get serial number hash for current user | RU: Возвращает хэш серийного номера текущего пользователя
   String? getSerialHash() {
     return _userSerialHash;
   }
   
-  /// Check if a user exists with the given serial number
+  /// TR: Verilen seri numara ile kullanıcı var mı kontrol eder | EN: Check if user exists with given serial | RU: Проверяет, есть ли пользователь с указанным серийным номером
   Future<bool> userExistsBySerial(String serialNumber) async {
     try {
       final serialHash = SerialHash.createHash(serialNumber);
@@ -371,7 +371,7 @@ class AuthService {
     }
   }
   
-  /// Create a user-specific table for results
+  /// TR: Kullanıcıya özel sonuç tablosu oluşturur | EN: Create user-specific results table | RU: Создает таблицу результатов для пользователя
   Future<bool> createUserTable() async {
     if (_currentUser == null) return false;
     
@@ -379,7 +379,7 @@ class AuthService {
       final userId = _currentUser!.id;
       final tableName = 'user_results_$userId';
       
-      // Create table with user-specific data structure
+      // TR: Kullanıcıya özel veri yapısıyla tablo oluştur | EN: Create table with user-specific structure | RU: Создать таблицу с пользовательской структурой данных
       await SupabaseService().client.rpc('create_user_table', params: {
         'table_name': tableName,
       });
@@ -391,7 +391,7 @@ class AuthService {
     }
   }
   
-  /// Get user-specific results
+  /// TR: Kullanıcıya özel sonuçları getirir | EN: Get user-specific results | RU: Получает результаты пользователя
   Future<List<Map<String, dynamic>>> getUserResults() async {
     if (_currentUser == null) return [];
     
@@ -410,7 +410,7 @@ class AuthService {
     }
   }
   
-  /// Insert result into user-specific table
+  /// TR: Kullanıcıya özel tabloya sonuç ekler | EN: Insert result into user-specific table | RU: Вставляет результат в пользовательскую таблицу
   Future<bool> insertUserResult(Map<String, dynamic> result) async {
     if (_currentUser == null) return false;
     
@@ -435,7 +435,7 @@ class AuthService {
         _currentUser = User.fromJson(userData);
       }
       
-      // Load serial hash from storage
+      // TR: Seri hash'i depodan yükle | EN: Load serial hash from storage | RU: Загрузить хэш серийного номера из хранилища
       final serialHash = await Storage.getString('user_serial_hash');
       if (serialHash != null) {
         _userSerialHash = serialHash;

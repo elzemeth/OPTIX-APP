@@ -14,13 +14,13 @@ class SignUpScreen extends StatefulWidget {
 class _SignUpScreenState extends State<SignUpScreen> {
   final _authService = AuthService();
   
-  // Form controllers
+  // TR: Form denetleyicileri | EN: Form controllers | RU: Контроллеры формы
   final _usernameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   
-  // Form state
+  // TR: Form durumu | EN: Form state | RU: Состояние формы
   bool _obscurePassword = true;
   bool _obscureConfirm = true;
   bool _isLoading = false;
