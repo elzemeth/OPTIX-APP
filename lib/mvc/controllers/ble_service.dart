@@ -262,42 +262,61 @@ class BleService {
 
           // TR: Hata ayıklama: bulunan tüm cihazları logla | EN: Debug: log all discovered devices | RU: Отладка: логировать все найденные устройства
           debugPrint('Discovered device: $deviceName (RSSI: ${result.rssi})');
-          debugPrint('Service UUIDs: ${result.advertisementData.serviceUuids}');
-          debugPrint('Manufacturer Data: ${result.advertisementData.manufacturerData}');
+          debugPrint('  Platform name: ${device.platformName}');
+          debugPrint('  Remote ID: ${device.remoteId}');
+          debugPrint('  Service UUIDs: ${result.advertisementData.serviceUuids}');
+          debugPrint('  Service UUIDs count: ${result.advertisementData.serviceUuids.length}');
+          debugPrint('  Manufacturer Data: ${result.advertisementData.manufacturerData}');
 
           bool isOptixDevice = false;
+          String matchReason = '';
 
-          // TR: Cihaz adında OPTIX var mı kontrol et | EN: Check device name for OPTIX | RU: Проверить, есть ли OPTIX в имени устройства
-          if (deviceName.toUpperCase().startsWith(AppConstants.bleDeviceNamePrefix) ||
-              deviceName.toLowerCase().contains('smartglasses') ||
-              deviceName.toLowerCase().contains('wifi manager')) {
+          // TR: Cihaz adında OPTIX var mı kontrol et (büyük/küçük harf duyarsız) | EN: Check device name for OPTIX (case insensitive) | RU: Проверить, есть ли OPTIX в имени устройства (без учета регистра)
+          final deviceNameUpper = deviceName.toUpperCase();
+          final deviceNameLower = deviceName.toLowerCase();
+          if (deviceNameUpper.startsWith('OPTIX') ||
+              deviceNameUpper.contains('OPTIX') ||
+              deviceNameLower.contains('optix') ||
+              deviceNameLower.contains('smartglasses') ||
+              deviceNameLower.contains('wifi manager')) {
             isOptixDevice = true;
-            debugPrint('Found OPTIX device by name: $deviceName');
+            matchReason = 'name: $deviceName';
+            debugPrint('✅ Found OPTIX device by name: $deviceName');
           }
 
           // TR: OPTIX servis UUID'lerini kontrol et | EN: Check for OPTIX service UUIDs | RU: Проверить сервисные UUID OPTIX
           if (result.advertisementData.serviceUuids.isNotEmpty) {
+            debugPrint('  Checking ${result.advertisementData.serviceUuids.length} service UUIDs...');
             for (Guid serviceUuid in result.advertisementData.serviceUuids) {
-              String uuidString = serviceUuid.toString().toLowerCase().replaceAll('-', '');
-              // TR: Bilinen OPTIX servis UUID'lerini kontrol et (tire olmadan) | EN: Check for known OPTIX service UUIDs (without dashes) | RU: Проверить известные сервисные UUID OPTIX (без дефисов)
-              final optixServiceUuid = '12345678-1234-5678-9abc-123456789abc'.toLowerCase().replaceAll('-', '');
-              final credentialUuid = '87654321-4321-4321-4321-cba987654321'.toLowerCase().replaceAll('-', '');
-              final statusUuid = '11111111-2222-3333-4444-555555555555'.toLowerCase().replaceAll('-', '');
-              final commandUuid = '66666666-7777-8888-9999-aaaaaaaaaaaa'.toLowerCase().replaceAll('-', '');
+              final uuidOriginal = serviceUuid.toString();
+              final uuidLower = uuidOriginal.toLowerCase();
+              final uuidNoDashes = uuidLower.replaceAll('-', '');
               
-              if (uuidString == optixServiceUuid ||
-                  uuidString == credentialUuid ||
-                  uuidString == statusUuid ||
-                  uuidString == commandUuid ||
-                  uuidString.contains(optixServiceUuid) ||
-                  uuidString.contains(credentialUuid) ||
-                  uuidString.contains(statusUuid) ||
-                  uuidString.contains(commandUuid)) {
+              debugPrint('    UUID: $uuidOriginal');
+              
+              // TR: Bilinen OPTIX servis UUID'lerini kontrol et (hem tireli hem tirsiz) | EN: Check for known OPTIX service UUIDs (with and without dashes) | RU: Проверить известные сервисные UUID OPTIX (с дефисами и без)
+              final optixServiceUuid = '12345678-1234-5678-9abc-123456789abc';
+              final credentialUuid = '87654321-4321-4321-4321-cba987654321';
+              final statusUuid = '11111111-2222-3333-4444-555555555555';
+              final commandUuid = '66666666-7777-8888-9999-aaaaaaaaaaaa';
+              
+              final optixServiceUuidLower = optixServiceUuid.toLowerCase();
+              final optixServiceUuidNoDashes = optixServiceUuidLower.replaceAll('-', '');
+              
+              if (uuidLower == optixServiceUuidLower ||
+                  uuidLower.contains(optixServiceUuidLower) ||
+                  uuidNoDashes == optixServiceUuidNoDashes ||
+                  uuidLower.contains(credentialUuid.toLowerCase()) ||
+                  uuidLower.contains(statusUuid.toLowerCase()) ||
+                  uuidLower.contains(commandUuid.toLowerCase())) {
                 isOptixDevice = true;
-                debugPrint('Found OPTIX device by service UUID: ${serviceUuid.toString()}');
+                matchReason = 'service UUID: $uuidOriginal';
+                debugPrint('✅ Found OPTIX device by service UUID: $uuidOriginal');
                 break;
               }
             }
+          } else {
+            debugPrint('  No service UUIDs in advertisement data');
           }
 
           // TR: Üretici verilerinde OPTIX var mı bak | EN: Check manufacturer data for OPTIX | RU: Проверить данные производителя на наличие OPTIX
@@ -323,10 +342,13 @@ class BleService {
             final existingIndex = _devices.indexWhere((d) => d.id == bleDevice.id);
             if (existingIndex >= 0) {
               _devices[existingIndex] = bleDevice;
+              debugPrint('✅ Updated OPTIX device: $displayName (RSSI: ${result.rssi}) - Matched by: $matchReason');
             } else {
               _devices.add(bleDevice);
+              debugPrint('✅ Added OPTIX device: $displayName (RSSI: ${result.rssi}) - Matched by: $matchReason');
             }
-            debugPrint('Added OPTIX device: $displayName (RSSI: ${result.rssi})');
+          } else {
+            debugPrint('❌ Device $deviceName is NOT an OPTIX device (no name/UUID match)');
           }
         }
 
