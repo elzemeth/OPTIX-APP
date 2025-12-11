@@ -65,10 +65,11 @@ class PiService {
         final tempFile = File('${Directory.systemTemp.path}/wifi_credentials_${DateTime.now().millisecondsSinceEpoch}.json');
         await tempFile.writeAsString(jsonContent);
 
-        // TR: SFTP ile dosyayı yükle | EN: Upload file via SFTP | RU: Загрузить файл через SFTP
+        // TR: SFTP ile dosyayı yükle (önce geçici bir yere) | EN: Upload file via SFTP (to temp location first) | RU: Загрузить файл через SFTP (сначала во временное место)
+        final tempRemotePath = '/tmp/wifi_credentials_temp.json';
         final uploadResult = await client.sftpUpload(
           path: tempFile.path,
-          toPath: wifiCredentialsPath,
+          toPath: tempRemotePath,
         );
 
         // TR: Geçici dosyayı sil | EN: Delete temporary file | RU: Удалить временный файл
@@ -80,7 +81,18 @@ class PiService {
           return await _writeWithEcho(client, jsonContent, ssid);
         }
 
-        debugPrint('✅ WiFi credentials uploaded via SFTP');
+        // TR: Sudo ile dosyayı taşı | EN: Move file with sudo | RU: Переместить файл с sudo
+        final moveCommand = "echo '$piPassword' | sudo -S mv $tempRemotePath $wifiCredentialsPath";
+        final moveResult = await client.execute(moveCommand);
+        debugPrint('Move command result: $moveResult');
+        
+        if (moveResult != null && (moveResult.contains('Permission denied') || moveResult.contains('Sorry'))) {
+          debugPrint('Move failed, trying echo method...');
+          await client.disconnectSFTP();
+          return await _writeWithEcho(client, jsonContent, ssid);
+        }
+
+        debugPrint('✅ WiFi credentials uploaded via SFTP and moved');
         await client.disconnectSFTP();
         await client.disconnect();
         return true;
@@ -105,25 +117,17 @@ class PiService {
       // TR: JSON içeriğini base64 encode et (özel karakter sorunlarını önlemek için) | EN: Base64 encode JSON content (to avoid special char issues) | RU: Кодировать содержимое JSON в base64 (чтобы избежать проблем со спецсимволами)
       final base64Content = base64Encode(utf8.encode(jsonContent));
       
-      // TR: Base64 decode ile dosyaya yaz | EN: Write to file using base64 decode | RU: Записать в файл с помощью декодирования base64
-      final writeCommand = "echo '$base64Content' | base64 -d > $wifiCredentialsPath";
-      final writeResult = await client.execute(writeCommand);
+      debugPrint('Writing with sudo (password: $piPassword)...');
+      // TR: Direkt sudo ile yaz (şifre ile) | EN: Write directly with sudo (with password) | RU: Записать напрямую с sudo (с паролем)
+      // TR: echo şifre | sudo -S komut | EN: echo password | sudo -S command | RU: echo пароль | sudo -S команда
+      final sudoCommand = "echo '$piPassword' | sudo -S sh -c 'echo \"$base64Content\" | base64 -d > $wifiCredentialsPath'";
+      final sudoResult = await client.execute(sudoCommand);
+      debugPrint('Sudo write result: $sudoResult');
       
-      debugPrint('Write command result: $writeResult');
-      
-      // TR: Eğer yazma başarısız olursa sudo ile dene | EN: If write fails, try with sudo | RU: Если запись не удалась, попробовать с sudo
-      if (writeResult == null || writeResult.contains('Permission denied')) {
-        debugPrint('Write failed, trying with sudo...');
-        // TR: Sudo ile dene | EN: Try with sudo | RU: Попробовать с sudo
-        final sudoCommand = "echo '$piPassword' | sudo -S sh -c \"echo '$base64Content' | base64 -d > $wifiCredentialsPath\"";
-        final sudoResult = await client.execute(sudoCommand);
-        debugPrint('Sudo write result: $sudoResult');
-        
-        if (sudoResult == null || sudoResult.contains('Permission denied') || sudoResult.contains('Sorry')) {
-          debugPrint('Sudo write failed');
-          await client.disconnect();
-          return false;
-        }
+      if (sudoResult != null && (sudoResult.contains('Permission denied') || sudoResult.contains('Sorry') || sudoResult.contains('incorrect'))) {
+        debugPrint('Sudo write failed: $sudoResult');
+        await client.disconnect();
+        return false;
       }
 
       // TR: Dosyanın yazıldığını doğrula | EN: Verify file was written | RU: Проверить, что файл записан
