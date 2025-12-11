@@ -35,13 +35,18 @@ CREATE INDEX IF NOT EXISTS idx_users_created_at ON public.users(created_at);
 ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
 
 -- 4. Create RLS policies for users table
--- TR: Kullanıcılar kendi verilerine erişebilir | EN: Users can access their own data | RU: Пользователи могут получить доступ к своим данным
-CREATE POLICY "Users can access their own data" ON public.users
-    FOR ALL USING (auth.uid()::text = id::text);
+-- TR: Önce tüm policy'leri sil (eğer varsa) | EN: Drop all existing policies first (if any) | RU: Сначала удалить все существующие политики (если есть)
+DROP POLICY IF EXISTS "Users can access their own data" ON public.users;
+DROP POLICY IF EXISTS "Allow signup" ON public.users;
+DROP POLICY IF EXISTS "Users can update their own data" ON public.users;
 
--- TR: Yeni kullanıcı kaydı için INSERT izni (signup) | EN: Allow INSERT for new user registration (signup) | RU: Разрешить INSERT для регистрации нового пользователя (signup)
+-- TR: Yeni kullanıcı kaydı için INSERT izni (signup) - ÖNCE BU OLMALI | EN: Allow INSERT for new user registration (signup) - THIS MUST BE FIRST | RU: Разрешить INSERT для регистрации нового пользователя (signup) - ЭТО ДОЛЖНО БЫТЬ ПЕРВЫМ
 CREATE POLICY "Allow signup" ON public.users
     FOR INSERT WITH CHECK (true);
+
+-- TR: Kullanıcılar kendi verilerine erişebilir (SELECT) | EN: Users can access their own data (SELECT) | RU: Пользователи могут получить доступ к своим данным (SELECT)
+CREATE POLICY "Users can access their own data" ON public.users
+    FOR SELECT USING (auth.uid()::text = id::text);
 
 -- TR: Kullanıcılar kendi verilerini güncelleyebilir | EN: Users can update their own data | RU: Пользователи могут обновлять свои данные
 CREATE POLICY "Users can update their own data" ON public.users

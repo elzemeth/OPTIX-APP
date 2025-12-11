@@ -53,6 +53,15 @@ try:
     HAS_WATCHDOG = True
 except ImportError:
     HAS_WATCHDOG = False
+    # TR: watchdog yoksa fallback sınıflar | EN: Fallback classes if watchdog not available | RU: Резервные классы, если watchdog недоступен
+    class Observer:
+        def __init__(self): pass
+        def schedule(self, *args, **kwargs): pass
+        def start(self): pass
+        def stop(self): pass
+        def join(self): pass
+    class FileSystemEventHandler:
+        pass
 
 logging.basicConfig(
     level=logging.INFO,

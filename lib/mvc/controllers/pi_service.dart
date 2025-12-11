@@ -49,21 +49,73 @@ class PiService {
       };
       final jsonContent = jsonEncode(credentials);
 
-      // TR: JSON içeriğini escape et (tek tırnak ve özel karakterler için) | EN: Escape JSON content (for single quotes and special chars) | RU: Экранировать содержимое JSON (для одинарных кавычек и спецсимволов)
-      final escapedContent = jsonContent.replaceAll("'", "'\"'\"'");
+      // TR: SFTP ile dosyaya yaz (daha güvenilir) | EN: Write to file using SFTP (more reliable) | RU: Записать в файл через SFTP (более надежно)
+      try {
+        // TR: SFTP bağlantısı kur | EN: Connect SFTP | RU: Подключить SFTP
+        final sftpResult = await client.connectSFTP();
+        if (sftpResult != "sftp_connected") {
+          debugPrint('SFTP connection failed: $sftpResult');
+          // TR: SFTP başarısız olursa echo komutu ile dene | EN: If SFTP fails, try with echo command | RU: Если SFTP не удался, попробовать с командой echo
+          return await _writeWithEcho(client, jsonContent, ssid);
+        }
 
-      // TR: Dosyaya yaz | EN: Write to file | RU: Записать в файл
-      // TR: echo komutu ile dosyaya yaz (sudo gerekebilir) | EN: Write to file using echo command (sudo may be needed) | RU: Записать в файл с помощью команды echo (может потребоваться sudo)
-      final writeCommand = "echo '$escapedContent' > $wifiCredentialsPath";
+        debugPrint('SFTP connected successfully');
+
+        // TR: Geçici dosya oluştur | EN: Create temporary file | RU: Создать временный файл
+        final tempFile = File('${Directory.systemTemp.path}/wifi_credentials_${DateTime.now().millisecondsSinceEpoch}.json');
+        await tempFile.writeAsString(jsonContent);
+
+        // TR: SFTP ile dosyayı yükle | EN: Upload file via SFTP | RU: Загрузить файл через SFTP
+        final uploadResult = await client.sftpUpload(
+          path: tempFile.path,
+          toPath: wifiCredentialsPath,
+        );
+
+        // TR: Geçici dosyayı sil | EN: Delete temporary file | RU: Удалить временный файл
+        await tempFile.delete();
+
+        if (uploadResult == null || uploadResult.toString().contains('failed')) {
+          debugPrint('SFTP upload failed: $uploadResult');
+          await client.disconnectSFTP();
+          return await _writeWithEcho(client, jsonContent, ssid);
+        }
+
+        debugPrint('✅ WiFi credentials uploaded via SFTP');
+        await client.disconnectSFTP();
+        await client.disconnect();
+        return true;
+      } catch (e) {
+        debugPrint('SFTP error: $e, trying echo method...');
+        return await _writeWithEcho(client, jsonContent, ssid);
+      }
+    } catch (e) {
+      debugPrint('Error writing WiFi credentials: $e');
+      if (client != null) {
+        try {
+          await client.disconnect();
+        } catch (_) {}
+      }
+      return false;
+    }
+  }
+
+  /// TR: Echo komutu ile dosyaya yaz (fallback) | EN: Write to file using echo command (fallback) | RU: Записать в файл с помощью команды echo (резервный метод)
+  Future<bool> _writeWithEcho(SSHClient client, String jsonContent, String ssid) async {
+    try {
+      // TR: JSON içeriğini base64 encode et (özel karakter sorunlarını önlemek için) | EN: Base64 encode JSON content (to avoid special char issues) | RU: Кодировать содержимое JSON в base64 (чтобы избежать проблем со спецсимволами)
+      final base64Content = base64Encode(utf8.encode(jsonContent));
+      
+      // TR: Base64 decode ile dosyaya yaz | EN: Write to file using base64 decode | RU: Записать в файл с помощью декодирования base64
+      final writeCommand = "echo '$base64Content' | base64 -d > $wifiCredentialsPath";
       final writeResult = await client.execute(writeCommand);
       
       debugPrint('Write command result: $writeResult');
       
       // TR: Eğer yazma başarısız olursa sudo ile dene | EN: If write fails, try with sudo | RU: Если запись не удалась, попробовать с sudo
-      if (writeResult == null || writeResult.isEmpty || writeResult.contains('Permission denied')) {
+      if (writeResult == null || writeResult.contains('Permission denied')) {
         debugPrint('Write failed, trying with sudo...');
         // TR: Sudo ile dene | EN: Try with sudo | RU: Попробовать с sudo
-        final sudoCommand = "echo '$piPassword' | sudo -S sh -c \"echo '$escapedContent' > $wifiCredentialsPath\"";
+        final sudoCommand = "echo '$piPassword' | sudo -S sh -c \"echo '$base64Content' | base64 -d > $wifiCredentialsPath\"";
         final sudoResult = await client.execute(sudoCommand);
         debugPrint('Sudo write result: $sudoResult');
         
@@ -75,7 +127,7 @@ class PiService {
       }
 
       // TR: Dosyanın yazıldığını doğrula | EN: Verify file was written | RU: Проверить, что файл записан
-      await Future.delayed(const Duration(milliseconds: 500)); // TR: Dosyanın yazılması için bekle | EN: Wait for file to be written | RU: Ждать записи файла
+      await Future.delayed(const Duration(milliseconds: 500));
       final verifyCommand = 'cat $wifiCredentialsPath';
       final verifyResult = await client.execute(verifyCommand);
       
@@ -90,12 +142,8 @@ class PiService {
         return false;
       }
     } catch (e) {
-      debugPrint('Error writing WiFi credentials: $e');
-      if (client != null) {
-        try {
-          await client.disconnect();
-        } catch (_) {}
-      }
+      debugPrint('Error in _writeWithEcho: $e');
+      await client.disconnect();
       return false;
     }
   }
