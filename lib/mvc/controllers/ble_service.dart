@@ -300,15 +300,33 @@ class BleService {
               final statusUuid = '11111111-2222-3333-4444-555555555555';
               final commandUuid = '66666666-7777-8888-9999-aaaaaaaaaaaa';
               
+              // TR: Tüm UUID'ler için hem tireli hem tirsiz versiyonlar oluştur | EN: Create both dashed and non-dashed versions for all UUIDs | RU: Создать версии с дефисами и без для всех UUID
               final optixServiceUuidLower = optixServiceUuid.toLowerCase();
               final optixServiceUuidNoDashes = optixServiceUuidLower.replaceAll('-', '');
+              final credentialUuidLower = credentialUuid.toLowerCase();
+              final credentialUuidNoDashes = credentialUuidLower.replaceAll('-', '');
+              final statusUuidLower = statusUuid.toLowerCase();
+              final statusUuidNoDashes = statusUuidLower.replaceAll('-', '');
+              final commandUuidLower = commandUuid.toLowerCase();
+              final commandUuidNoDashes = commandUuidLower.replaceAll('-', '');
               
+              // TR: Tüm UUID'ler için hem tam eşleşme hem içerme kontrolü (tireli ve tirsiz) | EN: Check both exact match and contains for all UUIDs (with and without dashes) | RU: Проверить как точное совпадение, так и содержимое для всех UUID (с дефисами и без)
               if (uuidLower == optixServiceUuidLower ||
                   uuidLower.contains(optixServiceUuidLower) ||
                   uuidNoDashes == optixServiceUuidNoDashes ||
-                  uuidLower.contains(credentialUuid.toLowerCase()) ||
-                  uuidLower.contains(statusUuid.toLowerCase()) ||
-                  uuidLower.contains(commandUuid.toLowerCase())) {
+                  uuidNoDashes.contains(optixServiceUuidNoDashes) ||
+                  uuidLower == credentialUuidLower ||
+                  uuidLower.contains(credentialUuidLower) ||
+                  uuidNoDashes == credentialUuidNoDashes ||
+                  uuidNoDashes.contains(credentialUuidNoDashes) ||
+                  uuidLower == statusUuidLower ||
+                  uuidLower.contains(statusUuidLower) ||
+                  uuidNoDashes == statusUuidNoDashes ||
+                  uuidNoDashes.contains(statusUuidNoDashes) ||
+                  uuidLower == commandUuidLower ||
+                  uuidLower.contains(commandUuidLower) ||
+                  uuidNoDashes == commandUuidNoDashes ||
+                  uuidNoDashes.contains(commandUuidNoDashes)) {
                 isOptixDevice = true;
                 matchReason = 'service UUID: $uuidOriginal';
                 debugPrint('✅ Found OPTIX device by service UUID: $uuidOriginal');
@@ -324,7 +342,8 @@ class BleService {
             for (var entry in result.advertisementData.manufacturerData.entries) {
               if (entry.value.toString().toLowerCase().contains('optix')) {
                 isOptixDevice = true;
-                debugPrint('Found OPTIX device by manufacturer data');
+                matchReason = 'manufacturer data: ${entry.value}';
+                debugPrint('✅ Found OPTIX device by manufacturer data: ${entry.value}');
                 break;
               }
             }
