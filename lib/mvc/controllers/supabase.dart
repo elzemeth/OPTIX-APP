@@ -53,31 +53,33 @@ class SupabaseService {
     await client.from('users').insert({'username': username, 'email': email});
   }
 
-  /// TR: Kullanıcıya özel tablodan sonuçları al | EN: Get user-specific results from their table | RU: Получить результаты из пользовательской таблицы
+  /// TR: Kullanıcıya ait sonuçları al | EN: Get results for a user | RU: Получить результаты пользователя
   Future<List<Map<String, dynamic>>> getUserResults(String userId) async {
-    final tableName = 'user_results_$userId';
     final response = await client
-        .from(tableName)
+        .from('results')
         .select()
+        .eq('created_by', userId)
         .order('created_at', ascending: false);
     return List<Map<String, dynamic>>.from(response);
   }
 
-  /// TR: Kullanıcıya özel tabloya sonuç ekle | EN: Insert result into user-specific table | RU: Вставить результат в пользовательскую таблицу
+  /// TR: Kullanıcıya ait tabloya sonuç ekle | EN: Insert result into shared table | RU: Вставить результат в общую таблицу
   Future<void> insertUserResult(String userId, Map<String, dynamic> result) async {
-    final tableName = 'user_results_$userId';
-    await client.from(tableName).insert(result);
+    await client.from('results').insert({
+      ...result,
+      'created_by': userId,
+    });
   }
 
-  /// TR: Kullanıcı tablosundan metin tipine göre sonuçları al | EN: Get results by text type from user-specific table | RU: Получить результаты по типу текста из пользовательской таблицы
+  /// TR: Metin tipine göre kullanıcı sonuçları | EN: Get results by text type | RU: Получить результаты по типу текста
   Future<List<Map<String, dynamic>>> getUserResultsByType(
     String userId, 
     String textType
   ) async {
-    final tableName = 'user_results_$userId';
     final response = await client
-        .from(tableName)
+        .from('results')
         .select()
+        .eq('created_by', userId)
         .eq('text_type', textType)
         .order('created_at', ascending: false);
     return List<Map<String, dynamic>>.from(response);

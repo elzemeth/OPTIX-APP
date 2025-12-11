@@ -371,36 +371,15 @@ class AuthService {
     }
   }
   
-  /// TR: Kullanıcıya özel sonuç tablosu oluşturur | EN: Create user-specific results table | RU: Создает таблицу результатов для пользователя
-  Future<bool> createUserTable() async {
-    if (_currentUser == null) return false;
-    
-    try {
-      final userId = _currentUser!.id;
-      final tableName = 'user_results_$userId';
-      
-      // TR: Kullanıcıya özel veri yapısıyla tablo oluştur | EN: Create table with user-specific structure | RU: Создать таблицу с пользовательской структурой данных
-      await SupabaseService().client.rpc('create_user_table', params: {
-        'table_name': tableName,
-      });
-      
-      return true;
-    } catch (e) {
-      debugPrint('Error creating user table: $e');
-      return false;
-    }
-  }
-  
-  /// TR: Kullanıcıya özel sonuçları getirir | EN: Get user-specific results | RU: Получает результаты пользователя
+  /// TR: Kullanıcıya ait sonuçları getirir | EN: Get user results | RU: Получает результаты пользователя
   Future<List<Map<String, dynamic>>> getUserResults() async {
     if (_currentUser == null) return [];
     
     try {
-      final userId = _currentUser!.id;
-      final tableName = 'user_results_$userId';
       final response = await SupabaseService().client
-          .from(tableName)
+          .from('results')
           .select()
+          .eq('created_by', _currentUser!.id)
           .order('created_at', ascending: false);
       
       return List<Map<String, dynamic>>.from(response);
@@ -410,16 +389,14 @@ class AuthService {
     }
   }
   
-  /// TR: Kullanıcıya özel tabloya sonuç ekler | EN: Insert result into user-specific table | RU: Вставляет результат в пользовательскую таблицу
+  /// TR: Kullanıcıya ait tabloya sonuç ekler | EN: Insert result into shared table | RU: Вставляет результат в общую таблицу
   Future<bool> insertUserResult(Map<String, dynamic> result) async {
     if (_currentUser == null) return false;
     
     try {
-      final userId = _currentUser!.id;
-      final tableName = 'user_results_$userId';
       await SupabaseService().client
-          .from(tableName)
-          .insert(result);
+          .from('results')
+          .insert({...result, 'created_by': _currentUser!.id});
       
       return true;
     } catch (e) {

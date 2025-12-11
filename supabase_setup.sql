@@ -38,40 +38,26 @@ ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Users can access their own data" ON public.users
     FOR ALL USING (auth.uid()::text = id::text);
 
--- 5. Function to create user-specific results table
-CREATE OR REPLACE FUNCTION create_user_table(table_name TEXT)
-RETURNS VOID AS $$
-BEGIN
-    EXECUTE format('
-        CREATE TABLE IF NOT EXISTS public.%I (
-            id SERIAL PRIMARY KEY,
-            file VARCHAR(255),
-            ts DOUBLE PRECISION,
-            text_index INTEGER,
-            text_type VARCHAR(50),
-            text TEXT,
-            confidence DOUBLE PRECISION,
-            box TEXT,
-            created_by UUID,
-            created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-            updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-        );
-        
-        -- Create indexes for better performance
-        CREATE INDEX IF NOT EXISTS idx_%I_created_by ON public.%I(created_by);
-        CREATE INDEX IF NOT EXISTS idx_%I_text_type ON public.%I(text_type);
-        CREATE INDEX IF NOT EXISTS idx_%I_created_at ON public.%I(created_at);
-        CREATE INDEX IF NOT EXISTS idx_%I_file ON public.%I(file);
-        
-        -- Enable RLS for user-specific table
-        ALTER TABLE public.%I ENABLE ROW LEVEL SECURITY;
-        
-        -- Create RLS policy for user-specific table
-        CREATE POLICY "Users can access their own results" ON public.%I
-            FOR ALL USING (created_by = auth.uid());
-    ', table_name, table_name, table_name, table_name, table_name, table_name, table_name, table_name);
-END;
-$$ LANGUAGE plpgsql;
+-- 5. Single shared results table (per-user data separated by RLS)
+DROP TABLE IF EXISTS public.results CASCADE;
+CREATE TABLE public.results (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    created_by UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+    file VARCHAR(255),
+    ts DOUBLE PRECISION,
+    text_index INTEGER,
+    text_type VARCHAR(50),
+    text TEXT,
+    confidence DOUBLE PRECISION,
+    box TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 6. Indexes for results (per-user fetch, type filter, recent first)
+CREATE INDEX IF NOT EXISTS idx_results_user_date ON public.results (created_by, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_results_user_type_date ON public.results (created_by, text_type, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_results_file ON public.results (file);
 
 -- 6. Function to check if device is already connected to another account
 CREATE OR REPLACE FUNCTION is_device_connected_to_another_account(
@@ -138,9 +124,8 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- 8. Function to insert result into user-specific table
-CREATE OR REPLACE FUNCTION insert_user_result(
-    table_name TEXT,
+-- 8. Helper function to insert into shared results table
+CREATE OR REPLACE FUNCTION insert_result(
     file_name VARCHAR(255),
     timestamp_val DOUBLE PRECISION,
     text_index_val INTEGER,
@@ -152,22 +137,21 @@ CREATE OR REPLACE FUNCTION insert_user_result(
 )
 RETURNS VOID AS $$
 BEGIN
-    EXECUTE format('
-        INSERT INTO public.%I (
-            file, ts, text_index, text_type, text, confidence, box, created_by
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-    ', table_name) USING file_name, timestamp_val, text_index_val, text_type_val, text_content, confidence_val, box_data, user_id;
+    INSERT INTO public.results (
+        file, ts, text_index, text_type, text, confidence, box, created_by
+    ) VALUES (
+        file_name, timestamp_val, text_index_val, text_type_val, text_content, confidence_val, box_data, user_id
+    );
 END;
 $$ LANGUAGE plpgsql;
 
--- 9. Function to get user results from user-specific table
-CREATE OR REPLACE FUNCTION get_user_results(
-    table_name TEXT,
+-- 9. Helper function to get results for a user (optionally filter by text_type)
+CREATE OR REPLACE FUNCTION get_results_for_user(
     user_id UUID,
     text_type_filter VARCHAR(50) DEFAULT NULL
 )
 RETURNS TABLE(
-    id INTEGER,
+    id UUID,
     file VARCHAR(255),
     ts DOUBLE PRECISION,
     text_index INTEGER,
@@ -181,46 +165,24 @@ RETURNS TABLE(
 ) AS $$
 BEGIN
     IF text_type_filter IS NULL THEN
-        RETURN QUERY EXECUTE format('
-            SELECT * FROM public.%I 
-            WHERE created_by = $1 
-            ORDER BY created_at DESC
-        ', table_name) USING user_id;
+        RETURN QUERY
+        SELECT * FROM public.results
+        WHERE created_by = user_id
+        ORDER BY created_at DESC;
     ELSE
-        RETURN QUERY EXECUTE format('
-            SELECT * FROM public.%I 
-            WHERE created_by = $1 AND text_type = $2 
-            ORDER BY created_at DESC
-        ', table_name) USING user_id, text_type_filter;
+        RETURN QUERY
+        SELECT * FROM public.results
+        WHERE created_by = user_id AND text_type = text_type_filter
+        ORDER BY created_at DESC;
     END IF;
 END;
 $$ LANGUAGE plpgsql;
 
--- 10. Create a general results table for fallback (if needed)
-CREATE TABLE IF NOT EXISTS public.results (
-    id SERIAL PRIMARY KEY,
-    file VARCHAR(255),
-    ts DOUBLE PRECISION,
-    text_index INTEGER,
-    text_type VARCHAR(50),
-    text TEXT,
-    confidence DOUBLE PRECISION,
-    box TEXT,
-    created_by UUID,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-);
-
--- 11. Create indexes for general results table
-CREATE INDEX IF NOT EXISTS idx_results_created_by ON public.results(created_by);
-CREATE INDEX IF NOT EXISTS idx_results_text_type ON public.results(text_type);
-CREATE INDEX IF NOT EXISTS idx_results_created_at ON public.results(created_at);
-CREATE INDEX IF NOT EXISTS idx_results_file ON public.results(file);
-
--- 12. Enable RLS for general results table
+-- 10. Enable RLS for results table
 ALTER TABLE public.results ENABLE ROW LEVEL SECURITY;
 
--- 13. Create RLS policy for general results table
+-- 11. RLS policy: only owner can access their rows
+DROP POLICY IF EXISTS "Users can access their own results" ON public.results;
 CREATE POLICY "Users can access their own results" ON public.results
     FOR ALL USING (created_by = auth.uid());
 

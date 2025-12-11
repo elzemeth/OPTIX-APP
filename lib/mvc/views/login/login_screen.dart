@@ -34,12 +34,6 @@ class _LoginScreenState extends State<LoginScreen> {
     final ok = await _auth.login(_username.text, _password.text);
     if (!mounted) return;
     if (ok) {
-      // Check if user has a serial number hash (from BLE connection)
-      final serialHash = AuthService().getSerialHash();
-      if (serialHash != null) {
-        // User has connected device, create their table if needed
-        await AuthService().createUserTable();
-      }
       if (!mounted) return;
       Navigator.pushReplacementNamed(context, AppConfig.homeRoute);
     } else {
