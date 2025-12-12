@@ -56,13 +56,13 @@ class WiFiCredentialsHandler(FileSystemEventHandler):
                     'timestamp': data.get('timestamp', '')
                 }
         except Exception as e:
-            logger.error(f"❌ Error reading credentials: {e}")
+            logger.error(f"Error reading credentials: {e}")
             return None
     
     def _configure_wifi(self, ssid, password):
         """TR: wpa_supplicant kullanarak WiFi yapılandır | EN: Configure WiFi using wpa_supplicant | RU: Настроить WiFi с помощью wpa_supplicant"""
         try:
-            logger.info(f"📡 Configuring WiFi for SSID: {ssid}")
+            logger.info(f"Configuring WiFi for SSID: {ssid}")
             
             # TR: wpa_supplicant yapılandırmasını oluştur | EN: Create wpa_supplicant configuration | RU: Создай конфиг wpa_supplicant
             config = f"""country=TR
@@ -89,11 +89,11 @@ network={{
             )
             
             if result.returncode != 0:
-                logger.error(f"❌ Failed to copy config: {result.stderr}")
+                logger.error(f"Failed to copy config: {result.stderr}")
                 return False
             
             # TR: Ağ servislerini yeniden başlat | EN: Restart networking | RU: Перезапусти сетевые службы
-            logger.info("🔄 Restarting networking...")
+            logger.info("Restarting networking...")
             result = subprocess.run(
                 ['sudo', 'systemctl', 'restart', 'dhcpcd'],
                 capture_output=True,
@@ -102,7 +102,7 @@ network={{
             )
             
             if result.returncode != 0:
-                logger.warning(f"⚠️ dhcpcd restart warning: {result.stderr}")
+                logger.warning(f"dhcpcd restart warning: {result.stderr}")
             
             # TR: wpa_supplicant'ı da yeniden başlat | EN: Also restart wpa_supplicant | RU: Перезапусти wpa_supplicant
             result = subprocess.run(
@@ -112,19 +112,19 @@ network={{
                 timeout=10
             )
             
-            logger.info("✅ WiFi configuration applied")
+            logger.info("WiFi configuration applied")
             
             # TR: Bekle ve bağlantıyı kontrol et | EN: Wait and check connection | RU: Подожди и проверь подключение
             time.sleep(5)
             if self._check_wifi_connection(ssid):
-                logger.info(f"✅ WiFi connected to {ssid}")
+                logger.info(f"WiFi connected to {ssid}")
                 return True
             else:
-                logger.warning(f"⚠️ WiFi connection to {ssid} not confirmed")
+                logger.warning(f"WiFi connection to {ssid} not confirmed")
                 return False
                 
         except Exception as e:
-            logger.error(f"❌ WiFi configuration error: {e}")
+            logger.error(f"WiFi configuration error: {e}")
             return False
     
     def _check_wifi_connection(self, ssid):
@@ -145,13 +145,13 @@ network={{
     def on_modified(self, event):
         """TR: Dosya değişikliğini işle | EN: Handle file modification | RU: Обработать изменение файла"""
         if event.src_path == WIFI_CREDENTIALS_FILE:
-            logger.info("📝 WiFi credentials file modified")
+            logger.info("WiFi credentials file modified")
             self._process_credentials()
     
     def on_created(self, event):
         """TR: Dosya oluşturulmasını işle | EN: Handle file creation | RU: Обработать создание файла"""
         if event.src_path == WIFI_CREDENTIALS_FILE:
-            logger.info("📝 WiFi credentials file created")
+            logger.info("WiFi credentials file created")
             self._process_credentials()
     
     def _process_credentials(self):
@@ -168,23 +168,23 @@ network={{
         
         credentials = self._read_credentials()
         if not credentials:
-            logger.warning("⚠️ No credentials found in file")
+            logger.warning("No credentials found in file")
             return
         
         ssid = credentials.get('ssid', '')
         password = credentials.get('password', '')
         
         if not ssid or not password:
-            logger.warning("⚠️ Invalid credentials (missing SSID or password)")
+            logger.warning("Invalid credentials (missing SSID or password)")
             return
         
-        logger.info(f"📨 Processing WiFi credentials for: {ssid}")
+        logger.info(f"Processing WiFi credentials for: {ssid}")
         self._configure_wifi(ssid, password)
 
 
 def main():
     """TR: Ana fonksiyon | EN: Main function | RU: Главная функция"""
-    logger.info("🚀 WiFi Credentials File Watcher starting...")
+    logger.info("WiFi Credentials File Watcher starting...")
     
     # TR: Dosya yoksa oluştur | EN: Create file if it doesn't exist | RU: Создай файл, если его нет
     Path(WIFI_CREDENTIALS_FILE).touch(exist_ok=True)
@@ -201,23 +201,23 @@ def main():
     )
     
     observer.start()
-    logger.info("✅ File watcher started")
+    logger.info("File watcher started")
     
     try:
         # TR: Dosya içerikliyse mevcut dosyayı işle | EN: Process existing file if it has content | RU: Обработай существующий файл, если в нём есть данные
         if os.path.getsize(WIFI_CREDENTIALS_FILE) > 0:
-            logger.info("📄 Processing existing credentials file...")
+            logger.info("Processing existing credentials file...")
             event_handler._process_credentials()
         
         # TR: Çalışmayı sürdür | EN: Keep running | RU: Продолжай работу
         while True:
             time.sleep(1)
     except KeyboardInterrupt:
-        logger.info("🛑 Stopping file watcher...")
+        logger.info("Stopping file watcher...")
         observer.stop()
     
     observer.join()
-    logger.info("👋 File watcher stopped")
+    logger.info("File watcher stopped")
 
 
 if __name__ == "__main__":

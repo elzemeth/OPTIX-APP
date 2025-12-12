@@ -78,17 +78,17 @@ class Application(dbus.service.Object):
     @dbus.service.method(DBUS_OM_IFACE, out_signature='a{oa{sa{sv}}}')
     def GetManagedObjects(self):
         response = {}
-        logger.info(f"📋 GetManagedObjects - {len(self.services)} services")
+        logger.info(f"GetManagedObjects - {len(self.services)} services")
         
         for service in self.services:
             service_path = service.get_path()
             response[service_path] = service.get_properties()
-            logger.info(f"📱 Service: {service.uuid}")
+            logger.info(f"Service: {service.uuid}")
             
             for chrc in service.get_characteristics():
                 chrc_path = chrc.get_path()
                 response[chrc_path] = chrc.get_properties()
-                logger.info(f"🔧 Characteristic: {chrc.uuid}")
+                logger.info(f"Characteristic: {chrc.uuid}")
         
         return response
 
@@ -158,26 +158,26 @@ class Characteristic(dbus.service.Object):
 
     @dbus.service.method(GATT_CHRC_IFACE, in_signature='a{sv}', out_signature='ay')
     def ReadValue(self, options):
-        logger.info(f'📖 Read: {self.uuid}')
+        logger.info(f'Read: {self.uuid}')
         return self.value
 
     @dbus.service.method(GATT_CHRC_IFACE, in_signature='aya{sv}')
     def WriteValue(self, value, options):
-        logger.info(f'✍️ Write: {self.uuid}')
+        logger.info(f'Write: {self.uuid}')
         self.value = value
 
     @dbus.service.method(GATT_CHRC_IFACE)
     def StartNotify(self):
-        logger.info(f'🔔 Notify start: {self.uuid}')
+        logger.info(f'Notify start: {self.uuid}')
 
     @dbus.service.method(GATT_CHRC_IFACE)
     def StopNotify(self):
-        logger.info(f'🔕 Notify stop: {self.uuid}')
+        logger.info(f'Notify stop: {self.uuid}')
 
 class WiFiService(Service):
     def __init__(self, bus, index):
         super().__init__(bus, index, WIFI_SERVICE_UUID, True)
-        logger.info(f"🚀 WiFi Service: {WIFI_SERVICE_UUID}")
+        logger.info(f"WiFi Service: {WIFI_SERVICE_UUID}")
         
         # TR: Karakteristikleri ekle | EN: Add characteristics | RU: Добавь характеристики
         self.add_characteristic(CredentialCharacteristic(bus, 0, self))
@@ -191,17 +191,17 @@ class CredentialCharacteristic(Characteristic):
             CREDENTIAL_CHAR_UUID,
             ['write', 'write-without-response'],
             service)
-        logger.info(f"🔧 Credential: {CREDENTIAL_CHAR_UUID}")
+        logger.info(f"Credential: {CREDENTIAL_CHAR_UUID}")
 
     def WriteValue(self, value, options):
-        logger.info('📨 WiFi credentials received')
+        logger.info('WiFi credentials received')
         try:
             data_str = ''.join([chr(byte) for byte in value])
             credential_data = json.loads(data_str)
             ssid = credential_data.get('ssid', '')
-            logger.info(f'📡 SSID: {ssid}')
+            logger.info(f'SSID: {ssid}')
         except Exception as e:
-            logger.error(f'❌ Error: {e}')
+            logger.error(f'Error: {e}')
 
 class StatusCharacteristic(Characteristic):
     def __init__(self, bus, index, service):
@@ -212,13 +212,13 @@ class StatusCharacteristic(Characteristic):
             service)
         self.status_value = "Ready"
         self.update_value()
-        logger.info(f"📊 Status: {STATUS_CHAR_UUID}")
+        logger.info(f"Status: {STATUS_CHAR_UUID}")
 
     def update_value(self):
         self.value = [ord(c) for c in self.status_value]
 
     def ReadValue(self, options):
-        logger.info(f'📖 Status: {self.status_value}')
+        logger.info(f'Status: {self.status_value}')
         return self.value
 
 class CommandCharacteristic(Characteristic):
@@ -231,17 +231,17 @@ class CommandCharacteristic(Characteristic):
         logger.info(f"⚡ Command: {COMMAND_CHAR_UUID}")
 
     def WriteValue(self, value, options):
-        logger.info('📨 Command received')
+        logger.info('Command received')
         try:
             data_str = ''.join([chr(byte) for byte in value])
-            logger.info(f'🎯 Command: {data_str}')
+            logger.info(f'Command: {data_str}')
         except Exception as e:
-            logger.error(f'❌ Error: {e}')
+            logger.error(f'Error: {e}')
 
 def setup_bluetooth():
     """TR: Bluetooth adaptörünü hazırla | EN: Set up Bluetooth adapter | RU: Настрой адаптер Bluetooth"""
     try:
-        logger.info("🔵 Setting up Bluetooth...")
+        logger.info("Setting up Bluetooth...")
         
         # TR: Adaptörü sıfırla | EN: Reset adapter | RU: Сбросить адаптер
         subprocess.run(['sudo', 'hciconfig', 'hci0', 'down'], capture_output=True)

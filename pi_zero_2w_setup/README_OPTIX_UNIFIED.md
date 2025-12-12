@@ -1,31 +1,31 @@
-# 🤖 OPTIX Smart Glasses - Unified System
+# OPTIX Smart Glasses - Unified System
 
 Bu sistem, Raspberry Pi Zero 2W üzerinde çalışan akıllı gözlük yazılımıdır. WiFi bağlantısı olmadığında BLE servisini açar, bağlantı olduğunda ise kamera streaming yapar.
 
-## 🚀 Özellikler
+## Özellikler
 
-### 📶 Akıllı Bağlantı Yönetimi
+### Akıllı Bağlantı Yönetimi
 - **WiFi Bağlı**: Kamera streaming moduna geçer
 - **WiFi Yok**: BLE servisini başlatır ve WiFi konfigürasyonu bekler
 
-### 🔵 BLE (Bluetooth Low Energy) Servisi
+### BLE (Bluetooth Low Energy) Servisi
 - Flutter uygulamasıyla uyumlu UUID'ler
 - WiFi credential'ları güvenli şekilde alır
 - Device registration ve authentication
 - Real-time status reporting
 
-### 📷 Akıllı Kamera Sistemi
+### Akıllı Kamera Sistemi
 - **3 Profil**: Quality, Lowlight, Motion
 - **Otomatik Profil Seçimi**: Işık ve hareket durumuna göre
 - **Hysteresis**: Profil değişimlerinde kararlılık
 - **Streaming**: TCP socket üzerinden görüntü gönderimi
 
-### 🔐 Güvenlik
+### Güvenlik
 - Device serial number hashing
 - Supabase entegrasyonu
 - Encrypted credential transmission
 
-## 📋 Gereksinimler
+## Gereksinimler
 
 ### Donanım
 - Raspberry Pi Zero 2W
@@ -38,7 +38,7 @@ Bu sistem, Raspberry Pi Zero 2W üzerinde çalışan akıllı gözlük yazılım
 - Python 3.9+
 - Bluetooth enabled
 
-## 🛠️ Kurulum
+## Kurulum
 
 ### 1. Dosyaları Kopyala
 ```bash
@@ -94,7 +94,7 @@ cd ~/optix
 ./start.sh
 ```
 
-## 🎮 Kullanım
+## Kullanım
 
 ### Servis Yönetimi
 ```bash
@@ -128,7 +128,7 @@ cd ~/optix
 python3 optix_smart_glasses.py
 ```
 
-## 📱 Flutter App Entegrasyonu
+## Flutter App Entegrasyonu
 
 ### BLE Bağlantı Süreci
 1. **Scan**: Flutter app OPTIX cihazını arar
@@ -142,7 +142,7 @@ python3 optix_smart_glasses.py
 - **Status** (`11111111-2222-3333-4444-555555555555`): Device status
 - **Command** (`66666666-7777-8888-9999-aaaaaaaaaaaa`): Commands
 
-## 🔧 Kamera Profilleri
+## Kamera Profilleri
 
 ### Quality Profile
 - **Resolution**: 4608x2592
@@ -211,7 +211,7 @@ which python3
 pip3 list | grep -E "(requests|dbus|PyGObject)"
 ```
 
-## 📊 Monitoring
+## Monitoring
 
 ### System Status
 ```bash
@@ -237,7 +237,7 @@ netstat -an
 ping google.com
 ```
 
-## 🔄 Otomatik Güncellemeler
+## Otomatik Güncellemeler
 
 Sistem otomatik olarak:
 - WiFi durumunu kontrol eder (30s interval)
@@ -245,7 +245,7 @@ Sistem otomatik olarak:
 - Kamera profili optimize eder (her frame)
 - Connection durumunu monitor eder
 
-## 🛡️ Güvenlik Notları
+## Güvenlik Notları
 
 1. **Serial Number**: Device identification için hash'lenir
 2. **WiFi Credentials**: BLE üzerinden encrypted gönderilir
@@ -262,4 +262,4 @@ Sorun yaşarsanız:
 
 ---
 
-**🎯 OPTIX Smart Glasses - Akıllı, Güvenli, Güçlü!** 🚀
+**OPTIX Smart Glasses - Akıllı, Güvenli, Güçlü!**
