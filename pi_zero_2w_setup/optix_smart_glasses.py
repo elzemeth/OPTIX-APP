@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-OPTIX Smart Glasses - Unified Client
-WiFi Management, BLE Service, Camera Streaming & Authentication
+TR: OPTIX Akıllı Gözlükler - Birleşik İstemci | EN: OPTIX Smart Glasses - Unified Client | RU: OPTIX умные очки — единый клиент
+TR: WiFi yönetimi, BLE servisi, kamera akışı ve kimlik doğrulama | EN: WiFi management, BLE service, camera streaming & authentication | RU: Управление WiFi, сервис BLE, потоковая камера и аутентификация
 """
 
 import json
@@ -527,7 +527,7 @@ class CameraSystem:
         self.probe_tool = self.find_probe_tool()
         
     def find_camera_tool(self) -> Optional[str]:
-        """Find available camera tool"""
+        """TR: Kullanılabilir kamera aracını bul | EN: Find available camera tool | RU: Найди доступный инструмент камеры"""
         for tool in ('rpicam-still', 'raspistill'):
             if SystemUtils.which(tool):
                 logger.info(f"📷 Using camera tool: {tool}")
@@ -536,11 +536,11 @@ class CameraSystem:
         return None
     
     def find_probe_tool(self) -> Optional[str]:
-        """Find probe tool for metadata"""
+        """TR: Metadata için probe aracını bul | EN: Find probe tool for metadata | RU: Найди probe-инструмент для метаданных"""
         return SystemUtils.which('rpicam-hello')
     
     def probe_environment(self) -> Tuple[float, float, float]:
-        """Probe camera environment"""
+        """TR: Kamera ortamını yokla | EN: Probe camera environment | RU: Опросить параметры среды камеры"""
         if not self.probe_tool:
             return (0.0, 1.0, 0.0)
             
@@ -566,7 +566,7 @@ class CameraSystem:
             return (0.0, 1.0, 0.0)
     
     def suggest_profile(self, exp_us: float, again: float, fps: float) -> Profile:
-        """Suggest optimal camera profile"""
+        """TR: En uygun kamera profilini öner | EN: Suggest optimal camera profile | RU: Подскажи оптимальный профиль камеры"""
         if (exp_us >= DARK_EXP_US) or (again >= DARK_AGAIN):
             return PROFILE_LOWLIGHT
         if fps != 0.0 and fps <= SLOW_FPS:
@@ -574,7 +574,7 @@ class CameraSystem:
         return PROFILE_QUALITY
     
     def capture_image(self, profile: Profile) -> Optional[bytes]:
-        """Capture image with given profile"""
+        """TR: Verilen profille görüntü yakala | EN: Capture image with given profile | RU: Захвати изображение с заданным профилем"""
         if not self.camera_tool:
             logger.debug("📷 No camera available - skipping capture")
             return None
@@ -603,7 +603,7 @@ class CameraSystem:
             return None
     
     def build_capture_cmd(self, tmp_path: str, profile: Profile) -> list[str]:
-        """Build camera capture command"""
+        """TR: Kamera çekim komutunu oluştur | EN: Build camera capture command | RU: Сформировать команду съемки"""
         if self.camera_tool == 'rpicam-still':
             cmd = [
                 'rpicam-still',
@@ -690,7 +690,7 @@ class OptixSystem:
             logger.debug(f'ensure_advertising check failed: {e}')
     
     def configure_wifi(self, ssid: str, password: str) -> bool:
-        """Configure WiFi connection"""
+        """TR: WiFi bağlantısını yapılandır | EN: Configure WiFi connection | RU: Настроить подключение WiFi"""
         try:
             # Create wpa_supplicant configuration
             config = f"""
@@ -729,7 +729,7 @@ network={{
             return False
     
     def handle_authentication(self, auth_data: str):
-        """Handle authentication request from mobile app"""
+        """TR: Mobil uygulamadan gelen kimlik doğrulama isteğini işle | EN: Handle authentication request from mobile app | RU: Обработать запрос аутентификации из мобильного приложения"""
         try:
             # Parse authentication data
             auth_json = auth_data[5:]  # Remove 'auth:' prefix
@@ -788,7 +788,7 @@ network={{
             self.send_status("Registration Error")
     
     def authenticate_with_supabase(self, username: str, password_hash: str) -> bool:
-        """Authenticate user with Supabase"""
+        """TR: Kullanıcıyı Supabase ile doğrula | EN: Authenticate user with Supabase | RU: Аутентифицировать пользователя через Supabase"""
         try:
             headers = {
                 'apikey': SUPABASE_ANON_KEY,
@@ -827,7 +827,7 @@ network={{
             return False
     
     def register_with_supabase(self, username: str, email: str, password_hash: str, device_serial: str) -> bool:
-        """Register user with Supabase"""
+        """TR: Kullanıcıyı Supabase'e kaydet | EN: Register user with Supabase | RU: Зарегистрировать пользователя в Supabase"""
         try:
             headers = {
                 'apikey': SUPABASE_ANON_KEY,
@@ -876,7 +876,7 @@ network={{
             return False
     
     def send_status(self, message: str):
-        """Send status message back to mobile app"""
+        """TR: Durum mesajını mobil uygulamaya gönder | EN: Send status message back to mobile app | RU: Отправить статусное сообщение в мобильное приложение"""
         try:
             logger.info(f"📤 Status: {message}")
             

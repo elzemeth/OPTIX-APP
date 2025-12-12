@@ -1,9 +1,5 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
+// TR: Bu basit bir Flutter widget testidir | EN: This is a basic Flutter widget test | RU: Это базовый тест виджета Flutter
+// TR: Widget etkileşimleri için WidgetTester kullanılır; dokunma ve kaydırma gibi jestleri simüle edip widget ağacındaki değerleri doğrulayabilirsiniz | EN: Use WidgetTester for widget interactions; simulate taps/scrolls and validate values in the widget tree | RU: Для взаимодействий с виджетами используйте WidgetTester; можно эмулировать нажатия/прокрутки и проверять значения в дереве виджетов
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -12,18 +8,18 @@ import 'package:design/main.dart';
 
 void main() {
   testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
+    // TR: Uygulamayı oluştur ve ilk frame'i tetikle | EN: Build the app and trigger the first frame | RU: Собери приложение и запусти первый кадр
     await tester.pumpWidget(const Root());
 
-    // Verify that our counter starts at 0.
+    // TR: Sayacın 0’dan başladığını doğrula | EN: Verify the counter starts at 0 | RU: Убедись, что счётчик начинается с 0
     expect(find.text('0'), findsOneWidget);
     expect(find.text('1'), findsNothing);
 
-    // Tap the '+' icon and trigger a frame.
+    // TR: '+' ikonuna dokun ve yeni frame'i tetikle | EN: Tap the '+' icon and trigger a new frame | RU: Нажми на иконку '+' и запусти новый кадр
     await tester.tap(find.byIcon(Icons.add));
     await tester.pump();
 
-    // Verify that our counter has incremented.
+    // TR: Sayacın arttığını doğrula | EN: Verify the counter incremented | RU: Убедись, что счётчик увеличился
     expect(find.text('0'), findsNothing);
     expect(find.text('1'), findsOneWidget);
   });

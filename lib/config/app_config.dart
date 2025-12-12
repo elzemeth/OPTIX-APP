@@ -3,17 +3,17 @@ import '../constants/app_constants.dart';
 import '../mvc/models/app_theme.dart';
 
 class AppConfig {
-  // Singleton pattern
+  // TR: Singleton deseni | EN: Singleton pattern | RU: Паттерн синглтон
   static final AppConfig _instance = AppConfig._internal();
   factory AppConfig() => _instance;
   AppConfig._internal();
 
-  // App Information
+  // TR: Uygulama bilgileri | EN: App information | RU: Информация о приложении
   String get appName => AppConstants.appName;
   String get appVersion => AppConstants.appVersion;
   String get appDescription => AppConstants.appDescription;
 
-  // Theme Configuration
+  // TR: Tema yapılandırması | EN: Theme configuration | RU: Настройки темы
   ThemeData get lightTheme => ThemeData(
     useMaterial3: true,
     colorScheme: AppTheme.lightColorScheme,
@@ -52,7 +52,7 @@ class AppConfig {
     ),
   );
 
-  // Text Theme Builder
+  // TR: Metin teması oluşturucu | EN: Text theme builder | RU: Построитель текстовой темы
   TextTheme _buildTextTheme(ColorScheme colorScheme) {
     return TextTheme(
       headlineLarge: AppTheme.headlineLarge.copyWith(color: colorScheme.onSurface),
@@ -70,7 +70,7 @@ class AppConfig {
     );
   }
 
-  // Route Names
+  // TR: Rota isimleri | EN: Route names | RU: Имена маршрутов
   static const String splashRoute = '/';
   static const String onboardingRoute = '/onboarding';
   static const String firstTimeRoute = '/first-time';
@@ -82,58 +82,58 @@ class AppConfig {
   static const String resultsRoute = '/results';
   static const String ocrRoute = '/ocr';
 
-  // Animation Durations
+  // TR: Animasyon süreleri | EN: Animation durations | RU: Длительности анимаций
   Duration get shortAnimation => AppConstants.shortAnimation;
   Duration get mediumAnimation => AppConstants.mediumAnimation;
   Duration get longAnimation => AppConstants.longAnimation;
 
-  // UI Constants
+  // TR: Arayüz sabitleri | EN: UI constants | RU: Константы интерфейса
   double get defaultPadding => AppConstants.defaultPadding;
   double get smallPadding => AppConstants.smallPadding;
   double get largePadding => AppConstants.largePadding;
   double get borderRadius => AppConstants.borderRadius;
   double get cardElevation => AppConstants.cardElevation;
 
-  // Validation Rules
+  // TR: Doğrulama kuralları | EN: Validation rules | RU: Правила валидации
   int get minPasswordLength => AppConstants.minPasswordLength;
   int get maxUsernameLength => AppConstants.maxUsernameLength;
   int get maxEmailLength => AppConstants.maxEmailLength;
 
-  // BLE Configuration
+  // TR: BLE yapılandırması | EN: BLE configuration | RU: Настройки BLE
   String get deviceName => AppConstants.deviceName;
   String get serviceUuid => AppConstants.serviceUuid;
   String get credentialUuid => AppConstants.credentialUuid;
   String get statusUuid => AppConstants.statusUuid;
   String get commandUuid => AppConstants.commandUuid;
 
-  // Text Types
+  // TR: Metin türleri | EN: Text types | RU: Типы текста
   List<String> get textTypes => [
     AppConstants.textTypeRaw,
     AppConstants.textTypeCharacterCorrected,
     AppConstants.textTypeMeaningCorrected,
   ];
 
-  // Time Buckets
+  // TR: Zaman dilimleri | EN: Time buckets | RU: Временные интервалы
   List<int> get timeBuckets => AppConstants.timeBuckets;
 
-  // Storage Keys
+  // TR: Depolama anahtarları | EN: Storage keys | RU: Ключи хранения
   String get userDataKey => AppConstants.userDataKey;
   String get loginStatusKey => AppConstants.loginStatusKey;
   String get onboardingKey => AppConstants.onboardingKey;
   String get serialHashKey => AppConstants.serialHashKey;
 
-  // Environment Configuration
+  // TR: Ortam yapılandırması | EN: Environment configuration | RU: Настройки окружения
   bool get isDebug => const bool.fromEnvironment('dart.vm.product') == false;
   bool get isRelease => const bool.fromEnvironment('dart.vm.product') == true;
 
-  // Feature Flags
+  // TR: Özellik bayrakları | EN: Feature flags | RU: Флаги возможностей
   bool get enableBLE => true;
   bool get enableOCR => true;
   bool get enableResults => true;
   bool get enableProfile => true;
   bool get enableSettings => true;
 
-  // API Configuration
+  // TR: API yapılandırması | EN: API configuration | RU: Настройки API
   String get supabaseUrlKey => AppConstants.supabaseUrl;
   String get supabaseAnonKey => AppConstants.supabaseAnonKey;
 }

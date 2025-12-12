@@ -23,7 +23,7 @@ class _RawScreenState extends State<RawScreen> {
 
   Future<void> _load() async {
     try {
-      // Use user-specific results instead of global table
+      // TR: Global tablo yerine kullanıcıya özel sonuçları kullan | EN: Use user-specific results instead of global table | RU: Используй результаты пользователя вместо общей таблицы
       final authService = AuthService();
       final userResults = await authService.getUserResults();
       
@@ -32,7 +32,7 @@ class _RawScreenState extends State<RawScreen> {
         filtered = all;
       });
     } catch (e) {
-      // Handle missing table gracefully
+      // TR: Eksik tabloyu gracefully ele al | EN: Handle missing table gracefully | RU: Корректно обработай отсутствие таблицы
       setState(() {
         all = [];
         filtered = [];

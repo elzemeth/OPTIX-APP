@@ -96,7 +96,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       const SizedBox(height: 32),
                       
-                      // Username field
+                      // TR: Kullanıcı adı alanı | EN: Username field | RU: Поле имени пользователя
                       TextField(
                         controller: _username,
                         decoration: AppTheme.inputDecoration(
@@ -106,7 +106,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       SizedBox(height: WidgetConstants.spacingMedium),
                       
-                      // Password field
+                      // TR: Parola alanı | EN: Password field | RU: Поле пароля
                       TextField(
                         controller: _password,
                         obscureText: _obscurePwd,
@@ -121,7 +121,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       const SizedBox(height: 24),
                       
-                      // Login button
+                      // TR: Giriş butonu | EN: Login button | RU: Кнопка входа
                       SizedBox(
                         width: double.infinity,
                         height: WidgetConstants.buttonHeightMedium,

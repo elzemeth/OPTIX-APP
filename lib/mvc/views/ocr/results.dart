@@ -17,7 +17,7 @@ class _ResultsState extends State<Results> {
   final _supabaseService = SupabaseService();
 
   int _bucketHours = 3;
-  String _textType = AppConstants.textTypeRaw; // 'raw' | 'character_corrected' | 'meaning_corrected'
+  String _textType = AppConstants.textTypeRaw; // TR: 'raw' | 'character_corrected' | 'meaning_corrected' | EN: 'raw' | 'character_corrected' | 'meaning_corrected' | RU: 'raw' | 'character_corrected' | 'meaning_corrected'
 
   bool _loading = true;                          
   List<Map<String, dynamic>> all = [];
@@ -48,14 +48,14 @@ class _ResultsState extends State<Results> {
   Future<void> _load() async {
     setState(() => _loading = true);
 
-    // Get current user
+    // TR: Mevcut kullanıcıyı al | EN: Get current user | RU: Получить текущего пользователя
     final user = AuthService.currentUser;
     if (user == null) {
       setState(() => _loading = false);
       return;
     }
 
-    // Get user-specific results by text type
+    // TR: Kullanıcıya özel sonuçları metin türüne göre al | EN: Get user-specific results by text type | RU: Получить результаты пользователя по типу текста
     final list = await _supabaseService.getUserResultsByType(user.id, _textType);
 
     list.sort((a, b) {
@@ -168,7 +168,7 @@ class _ResultsState extends State<Results> {
             initialValue: _textType,
             onSelected: (v) {
               setState(() => _textType = v);
-              _load(); // Reload data when text type changes
+              _load(); // TR: Metin türü değişince veriyi yeniden yükle | EN: Reload data when text type changes | RU: Перезагрузи данные при смене типа текста
             },
             itemBuilder: (_) => [
               PopupMenuItem(value: AppConstants.textTypeRaw, child: Text(AppStrings.rawText)),

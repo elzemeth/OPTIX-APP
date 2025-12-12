@@ -14,7 +14,7 @@ import 'mvc/controllers/auth_service.dart';
 import 'mvc/views/ocr/results.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-// Global theme mode notifier
+// TR: Global tema modu bildiricisi | EN: Global theme mode notifier | RU: Глобальный нотификатор режима темы
 final ValueNotifier<ThemeMode> themeMode = ValueNotifier(ThemeMode.system);
 
 Future<void> main() async {
@@ -23,25 +23,25 @@ Future<void> main() async {
   try {
     await SupabaseService().init();
   } catch (e) {
-    // Handle Supabase initialization errors gracefully
+    // TR: Supabase başlatma hatalarını yumuşak şekilde ele al | EN: Handle Supabase initialization errors gracefully | RU: Аккуратно обрабатывай ошибки инициализации Supabase
     debugPrint('Warning: Supabase initialization failed: $e');
-    // Continue app startup even if Supabase fails
+    // TR: Supabase başarısız olsa bile uygulamayı başlatmaya devam et | EN: Continue app startup even if Supabase fails | RU: Продолжай запуск приложения даже при ошибке Supabase
   }
   
-  // Load user data from storage
+  // TR: Kullanıcı verisini depodan yükle | EN: Load user data from storage | RU: Загрузить данные пользователя из хранилища
   try {
     await AuthService().loadUserFromStorage();
   } catch (e) {
     debugPrint('Warning: Failed to load user data: $e');
   }
   
-  // Check location permission status on app startup (but don't force request)
+  // TR: Konum izni durumunu başlangıçta kontrol et (istek göndermeden) | EN: Check location permission status on startup (without forcing request) | RU: Проверить статус разрешения на геолокацию при старте (без запроса)
   try {
     final currentStatus = await Permission.location.status;
     debugPrint('Current location permission status: $currentStatus');
     
-    // Only log the status, don't force request here
-    // Let the BLE service handle permission requests when needed
+    // TR: Sadece durumu logla, burada izin isteme | EN: Only log status, do not request here | RU: Только логируй статус, не запрашивай здесь
+    // TR: İzin isteğini gerektiğinde BLE servisi yönetsin | EN: Let BLE service handle permission requests when needed | RU: Разрешения запрашивает BLE-сервис при необходимости
   } catch (e) {
     debugPrint('Warning: Failed to check location permission: $e');
   }

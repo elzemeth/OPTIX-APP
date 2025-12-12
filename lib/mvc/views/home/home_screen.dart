@@ -256,7 +256,7 @@ class _HomeScreenState extends State<HomeScreen> {
         padding: const EdgeInsets.fromLTRB(16, 16, 16, 64),
         child: LayoutBuilder(
           builder: (context, constraints) {
-            // Cache layout calculations to avoid recalculation
+            // TR: Yerleşim hesaplarını önbelleğe alıp tekrar hesaplamayı azalt | EN: Cache layout calculations to avoid recomputation | RU: Кэшируй расчёты макета, чтобы не пересчитывать
             final totalH = constraints.maxHeight;
             final totalW = constraints.maxWidth;
 
@@ -267,7 +267,7 @@ class _HomeScreenState extends State<HomeScreen> {
             const mainSpacing = 12.0;
             const middleGap = 16.0;
 
-            // Optimize hero fraction calculation
+            // TR: Hero yüksekliği oranını optimize et | EN: Optimize hero height fraction | RU: Оптимизируй долю высоты hero
             final heroFrac = totalH < 600 ? 0.28 : (totalW >= 1200 ? 0.40 : 0.33);
             final heroH = totalH * heroFrac;
             final gridH = totalH - heroH - middleGap;
@@ -277,7 +277,7 @@ class _HomeScreenState extends State<HomeScreen> {
             final cellH = (gridH - (rows - 1) * mainSpacing) / rows;
             final aspect = cellW / cellH;
 
-            // Pre-calculate values to avoid recalculation in itemBuilder
+            // TR: itemBuilder içinde yeniden hesaplamayı önlemek için değerleri hazırla | EN: Pre-calculate values to avoid recalculation in itemBuilder | RU: Предвычисли значения, чтобы не считать в itemBuilder
             final values = _currentValues(cs, _stats);
 
             return Column(

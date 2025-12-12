@@ -23,9 +23,9 @@ class GlassesHeroCard extends StatelessWidget {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            // Görsel (tam alan)
+            // TR: Tam alan görsel | EN: Full-bleed image | RU: Изображение на всю область
             Ink.image(image: image, fit: BoxFit.cover),
-            // Alt kısımda koyu gradient + başlık
+            // TR: Altta koyu gradyan ve başlık | EN: Dark gradient and title at bottom | RU: Тёмный градиент и заголовок внизу
             Container(
               decoration: const BoxDecoration(
                 gradient: LinearGradient(

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-OPTIX GATT Server - Clean & Simple
-WiFi Management via Bluetooth Low Energy
+TR: OPTIX GATT Sunucusu - Basit ve Temiz | EN: OPTIX GATT Server - Clean & Simple | RU: GATT-сервер OPTIX — просто и ясно
+TR: WiFi yönetimi Bluetooth Low Energy ile | EN: WiFi management via Bluetooth Low Energy | RU: Управление WiFi через Bluetooth Low Energy
 """
 
 import json
@@ -14,7 +14,7 @@ import dbus.exceptions
 import dbus.mainloop.glib
 import dbus.service
 
-# Try to import GLib
+# TR: GLib'i içe aktarmayı dene | EN: Try to import GLib | RU: Попробовать импортировать GLib
 try:
     from gi.repository import GLib
     HAS_GLIB = True
@@ -35,17 +35,17 @@ except ImportError:
     class GLib:
         MainLoop = SimpleMainLoop
 
-# Setup logging
+# TR: Loglamayı yapılandır | EN: Set up logging | RU: Настроить логирование
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
 
-# BLE UUIDs
+# TR: BLE UUID'leri | EN: BLE UUIDs | RU: UUID для BLE
 WIFI_SERVICE_UUID = "12345678-1234-5678-9abc-123456789abc"
 CREDENTIAL_CHAR_UUID = "87654321-4321-4321-4321-cba987654321"
 STATUS_CHAR_UUID = "11111111-2222-3333-4444-555555555555"
 COMMAND_CHAR_UUID = "66666666-7777-8888-9999-aaaaaaaaaaaa"
 
-# D-Bus Constants
+# TR: D-Bus sabitleri | EN: D-Bus constants | RU: Константы D-Bus
 BLUEZ_SERVICE_NAME = 'org.bluez'
 GATT_MANAGER_IFACE = 'org.bluez.GattManager1'
 DBUS_OM_IFACE = 'org.freedesktop.DBus.ObjectManager'
@@ -65,7 +65,7 @@ class Application(dbus.service.Object):
         self.services = []
         dbus.service.Object.__init__(self, bus, self.path)
         
-        # Add WiFi service
+        # TR: WiFi servisini ekle | EN: Add WiFi service | RU: Добавь сервис WiFi
         wifi_service = WiFiService(bus, 0)
         self.add_service(wifi_service)
 
@@ -179,7 +179,7 @@ class WiFiService(Service):
         super().__init__(bus, index, WIFI_SERVICE_UUID, True)
         logger.info(f"🚀 WiFi Service: {WIFI_SERVICE_UUID}")
         
-        # Add characteristics
+        # TR: Karakteristikleri ekle | EN: Add characteristics | RU: Добавь характеристики
         self.add_characteristic(CredentialCharacteristic(bus, 0, self))
         self.add_characteristic(StatusCharacteristic(bus, 1, self))
         self.add_characteristic(CommandCharacteristic(bus, 2, self))
@@ -239,23 +239,23 @@ class CommandCharacteristic(Characteristic):
             logger.error(f'❌ Error: {e}')
 
 def setup_bluetooth():
-    """Setup Bluetooth adapter"""
+    """TR: Bluetooth adaptörünü hazırla | EN: Set up Bluetooth adapter | RU: Настрой адаптер Bluetooth"""
     try:
         logger.info("🔵 Setting up Bluetooth...")
         
-        # Reset adapter
+        # TR: Adaptörü sıfırla | EN: Reset adapter | RU: Сбросить адаптер
         subprocess.run(['sudo', 'hciconfig', 'hci0', 'down'], capture_output=True)
         time.sleep(1)
         subprocess.run(['sudo', 'hciconfig', 'hci0', 'up'], capture_output=True)
         time.sleep(2)
         
-        # Set device name
+        # TR: Cihaz adını ayarla | EN: Set device name | RU: Установить имя устройства
         subprocess.run(['sudo', 'hciconfig', 'hci0', 'name', 'OPTIX'], capture_output=True)
         
-        # Make discoverable and pairable
+        # TR: Keşfedilebilir ve eşleşebilir yap | EN: Make discoverable and pairable | RU: Сделать обнаруживаемым и доступным для спаривания
         subprocess.run(['sudo', 'hciconfig', 'hci0', 'piscan'], capture_output=True)
         
-        # Enable LE advertising with proper parameters
+        # TR: Uygun parametrelerle LE reklamını etkinleştir | EN: Enable LE advertising with proper parameters | RU: Включить LE-рекламу с нужными параметрами
         subprocess.run(['sudo', 'hciconfig', 'hci0', 'leadv', '0'], capture_output=True)
         time.sleep(1)
         subprocess.run(['sudo', 'hciconfig', 'hci0', 'leadv', '3'], capture_output=True)
@@ -263,11 +263,11 @@ def setup_bluetooth():
         subprocess.run(['sudo', 'hciconfig', 'hci0', 'leadv', '4'], capture_output=True)
         time.sleep(3)
 
-        # Force device name to be advertised
+        # TR: Cihaz adının mutlaka reklamda olmasını sağla | EN: Force device name to be advertised | RU: Гарантировать показ имени устройства в рекламе
         subprocess.run(['sudo', 'hciconfig', 'hci0', 'name', 'OPTIX'], capture_output=True)
         subprocess.run(['sudo', 'hciconfig', 'hci0', 'piscan'], capture_output=True)
         
-        # Set up service UUID advertising using bluetoothctl
+        # TR: bluetoothctl ile servis UUID reklamını kur | EN: Set up service UUID advertising using bluetoothctl | RU: Настроить рекламу UUID сервиса через bluetoothctl
         logger.info("📡 Setting up service UUID advertising...")
         bluetoothctl_commands = f"""
 power on
@@ -320,15 +320,15 @@ def register_app_error_cb(error):
     logger.error(f'❌ Registration failed: {error}')
 
 def main():
-    """Main function"""
+    """TR: Ana fonksiyon | EN: Main function | RU: Главная функция"""
     logger.info("🚀 Starting OPTIX GATT Server...")
     
-    # Setup Bluetooth
+    # TR: Bluetooth'u hazırla | EN: Set up Bluetooth | RU: Настроить Bluetooth
     if not setup_bluetooth():
         logger.error("❌ Bluetooth setup failed")
         sys.exit(1)
     
-    # Setup D-Bus
+    # TR: D-Bus'u hazırla | EN: Set up D-Bus | RU: Настроить D-Bus
     dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
     
     try:
@@ -337,13 +337,13 @@ def main():
         logger.error(f"❌ D-Bus error: {e}")
         sys.exit(1)
     
-    # Find adapter
+    # TR: Adaptörü bul | EN: Find adapter | RU: Найти адаптер
     adapter = find_adapter(bus)
     if not adapter:
         logger.error('❌ No GATT manager found')
         sys.exit(1)
     
-    # Create and register application
+    # TR: Uygulamayı oluştur ve kaydet | EN: Create and register application | RU: Создать и зарегистрировать приложение
     logger.info("📱 Creating GATT application...")
     app = Application(bus)
     
@@ -364,7 +364,7 @@ def main():
         logger.info(f"⚡ Command: {COMMAND_CHAR_UUID}")
         logger.info("🎯 Device: OPTIX")
         
-        # Set up periodic advertising renewal
+        # TR: Periyodik reklam yenilemeyi ayarla | EN: Set up periodic advertising renewal | RU: Настрой периодическое обновление рекламы
         def renew_advertising():
             try:
                 logger.info("🔄 Renewing BLE advertising...")
@@ -373,16 +373,16 @@ def main():
                 subprocess.run(['sudo', 'hciconfig', 'hci0', 'name', 'OPTIX'], capture_output=True)
                 subprocess.run(['sudo', 'hciconfig', 'hci0', 'piscan'], capture_output=True)
                 subprocess.run(['sudo', 'hciconfig', 'hci0', 'leadv', '3'], capture_output=True)
-                return True  # Continue periodic calls
+                return True  # TR: Periyodik çağrılara devam et | EN: Continue periodic calls | RU: Продолжать периодические вызовы
             except Exception as e:
                 logger.error(f"❌ Advertising renewal failed: {e}")
                 return True
         
-        # Start advertising renewal timer (every 30 seconds)
+        # TR: Reklam yenileme zamanlayıcısını başlat (30 saniyede bir) | EN: Start advertising renewal timer (every 30 seconds) | RU: Запусти таймер обновления рекламы (каждые 30 секунд)
         if HAS_GLIB:
             GLib.timeout_add_seconds(30, renew_advertising)
         
-        # Start main loop
+        # TR: Ana döngüyü başlat | EN: Start main loop | RU: Запусти главный цикл
         mainloop = GLib.MainLoop()
         mainloop.run()
         

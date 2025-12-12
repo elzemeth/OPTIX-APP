@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class AppTheme {
-  // Color Schemes
+  // TR: Renk şemaları | EN: Color schemes | RU: Цветовые схемы
   static const ColorScheme lightColorScheme = ColorScheme.light(
     primary: Color(0xFF6366F1),
     secondary: Color(0xFF8B5CF6),
@@ -24,7 +24,7 @@ class AppTheme {
     onError: Color(0xFFFFFFFF),
   );
 
-  // Text Styles
+  // TR: Metin stilleri | EN: Text styles | RU: Текстовые стили
   static const TextStyle headlineLarge = TextStyle(
     fontSize: 32,
     fontWeight: FontWeight.bold,
@@ -97,7 +97,7 @@ class AppTheme {
     height: 1.4,
   );
 
-  // Button Styles
+  // TR: Buton stilleri | EN: Button styles | RU: Стили кнопок
   static ButtonStyle primaryButtonStyle = ElevatedButton.styleFrom(
     padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
     shape: RoundedRectangleBorder(
@@ -121,7 +121,7 @@ class AppTheme {
     ),
   );
 
-  // Card Styles
+  // TR: Kart stilleri | EN: Card styles | RU: Стили карточек
   static CardThemeData cardTheme = CardThemeData(
     elevation: 2,
     shape: RoundedRectangleBorder(
@@ -130,7 +130,7 @@ class AppTheme {
     margin: const EdgeInsets.all(8),
   );
 
-  // Input Decoration
+  // TR: Girdi süslemeleri | EN: Input decoration | RU: Оформление полей ввода
   static InputDecoration inputDecoration({
     required String labelText,
     String? hintText,
@@ -165,7 +165,7 @@ class AppTheme {
     );
   }
 
-  // App Bar Theme
+  // TR: Uygulama çubuğu teması | EN: App bar theme | RU: Тема app bar
   static AppBarTheme appBarTheme(ColorScheme colorScheme) {
     return AppBarTheme(
       backgroundColor: Colors.transparent,
@@ -176,7 +176,7 @@ class AppTheme {
     );
   }
 
-  // Bottom Navigation Bar Theme
+  // TR: Alt gezinme çubuğu teması | EN: Bottom navigation bar theme | RU: Тема нижней навигации
   static BottomNavigationBarThemeData bottomNavTheme(ColorScheme colorScheme) {
     return BottomNavigationBarThemeData(
       backgroundColor: colorScheme.surface,
@@ -187,7 +187,7 @@ class AppTheme {
     );
   }
 
-  // Drawer Theme
+  // TR: Çekmece teması | EN: Drawer theme | RU: Тема бокового меню
   static DrawerThemeData drawerTheme(ColorScheme colorScheme) {
     return DrawerThemeData(
       backgroundColor: colorScheme.surface,
@@ -201,7 +201,7 @@ class AppTheme {
     );
   }
 
-  // Glass Card Style
+  // TR: Cam kart stili | EN: Glass card style | RU: Стиль стеклянной карточки
   static BoxDecoration glassCardDecoration({
     required Color backgroundColor,
     required List<Color> gradientColors,
@@ -223,7 +223,7 @@ class AppTheme {
     );
   }
 
-  // Gradient Colors
+  // TR: Gradyan renkleri | EN: Gradient colors | RU: Цвета градиента
   static const List<Color> lightGradientColors = [
     Color(0xFF6366F1),
     Color(0xFF8B5CF6),
@@ -233,7 +233,7 @@ class AppTheme {
     Color(0xFF0F172A),
   ];
 
-  // Gradient Backgrounds
+  // TR: Gradyan arka planlar | EN: Gradient backgrounds | RU: Градиентные фоны
   static const LinearGradient lightGradient = LinearGradient(
     colors: lightGradientColors,
     begin: Alignment.topLeft,
@@ -246,7 +246,7 @@ class AppTheme {
     end: Alignment.bottomRight,
   );
 
-  // Theme Data
+  // TR: Tema verisi | EN: Theme data | RU: Данные темы
   static ThemeData get lightTheme => ThemeData(
     useMaterial3: true,
     colorScheme: lightColorScheme,
