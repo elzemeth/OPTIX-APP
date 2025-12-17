@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-TR: OPTIX Akıllı Gözlükler - Birleşik İstemci | EN: OPTIX Smart Glasses - Unified Client | RU: OPTIX умные очки — единый клиент
+TR: OPTIX - Birleşik İstemci | EN: OPTIX - Unified Client | RU: OPTIX — единый клиент
 TR: WiFi yönetimi, BLE servisi, kamera akışı ve kimlik doğrulama | EN: WiFi management, BLE service, camera streaming & authentication | RU: Управление WiFi, сервис BLE, потоковая камера и аутентификация
 """
 
@@ -74,8 +74,8 @@ CREDENTIAL_CHAR_UUID = "87654321-4321-4321-4321-cba987654321"
 STATUS_CHAR_UUID = "11111111-2222-3333-4444-555555555555"
 COMMAND_CHAR_UUID = "66666666-7777-8888-9999-aaaaaaaaaaaa"
 
-SUPABASE_URL = "https://naszbfjwwpceujpjvkkc.supabase.co"
-SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5hc3piZmp3d3BjZXVqcGp2a2tjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTUzNTM2MDYsImV4cCI6MjA3MDkyOTYwNn0.n2Y1uj4nD39sdo1EJRrpHFDTbGqYl_wdRDTOv2cecJc"  # Replace with your Supabase anon key
+SUPABASE_URL = "your-supabase-url"
+SUPABASE_ANON_KEY = "your-supabase-anon-key"
 
 BLUEZ_SERVICE_NAME = 'org.bluez'
 GATT_MANAGER_IFACE = 'org.bluez.GattManager1'

@@ -77,15 +77,15 @@ End-to-end guide for the OPTIX smart glasses stack: Flutter mobile app, Raspberr
 - Fallback serial derived from device ID prefix `OPTIX_XXXXXXXX` if service/char not found.
 
 **WiFi credential path**
-- Target on Pi: `/tmp/wifi_credentials.json` (watched).
-- App primary path: sudo write (base64 → file) using `ssh2` with `optix/1821`.
+- Target on Pi: `/tmp/wifi_credentials.json`.
+- App primary path: sudo write (base64 → file) using `ssh2` with `username/password`.
 - Fallback: SFTP upload to `/home/optix/wifi_credentials_temp_<ts>.json` then `sudo mv` to target.
 - Pi watcher debounces writes, skips if already connected to target SSID, then rewrites `wpa_supplicant.conf` and restarts `dhcpcd`.
 
 ---
 
 ## 6) Supabase Model (dev mode)
-- Tables: `users`, `results` (plus optional user-specific result tables via RPC).
+- Tables: `users`, `results`.
 - RLS: Disabled for `users` and `results` in `supabase_setup.sql` to unblock signup/login during development.
 - Passwords: Stored as SHA-256 hashes (no salt; dev only).
 - Device binding: `device_id` holds hashed serial; uniqueness enforced in app logic before binding.
@@ -98,7 +98,6 @@ End-to-end guide for the OPTIX smart glasses stack: Flutter mobile app, Raspberr
 SUPABASE_URL=your-url
 SUPABASE_ANON_KEY=your-anon-key
 ```
-- Keep UTF-8, no BOM. Do not commit real keys.
 
 **Pi connection (mobile)**
 - `lib/mvc/controllers/pi_service.dart`: `piHost`, `piUser`, `piPassword`, `piPort`. Update to your LAN IP and credentials.
@@ -122,7 +121,7 @@ SUPABASE_ANON_KEY=your-anon-key
 4) iOS: ensure Bluetooth + Location entitlements in `ios/Runner/Info.plist`.
 
 **Pi**
-1) Requirements: Python 3, BlueZ with D-Bus, `pip install -r requirements` (dbus-python, pygobject, watchdog, requests).  
+1) Requirements: Python 3.9, BlueZ with D-Bus, `pip install -r requirements` (dbus-python, pygobject, watchdog, requests).  
 2) Copy `pi_zero_2w_setup/` to Pi.  
 3) Make scripts executable: `chmod +x install_optix_unified.sh`.  
 4) Enable service: `sudo systemctl enable --now smart-glasses.service`.  
@@ -136,25 +135,3 @@ SUPABASE_ANON_KEY=your-anon-key
 - Device: `pi_zero_2w_setup/optix_smart_glasses.py`, `smart-glasses.service`
 - Backend schema: `supabase_setup.sql`, `supabase_functions.sql`
 - Documentation: `USER_STORIES.md`, `pi_zero_2w_setup/README_OPTIX_UNIFIED.md`
-
----
-
-## 10) Troubleshooting
-- **Device not visible over BLE**: Restart `bluetooth` + service on Pi (`sudo systemctl restart bluetooth smart-glasses.service`). Advertising watchdog in Python will attempt restarts, but adapter issues may need manual reset.
-- **Repeated pairing popups (iOS)**: Already mitigated with `autoConnect: false` and scan-stop-before-connect. Ensure you stop scanning before connect.
-- **WiFi credentials not applied**: Confirm `/tmp/wifi_credentials.json` exists on Pi and contains SSID; check `journalctl -u smart-glasses.service -f`. Ensure sudo password/IP in `pi_service.dart` match the Pi.
-- **Supabase unauthorized/RLS errors**: RLS is disabled in `supabase_setup.sql` for dev. Reapply script if policies were added back.
-- **Env not loading**: `.env` must sit at repo root, UTF-8, no quotes around values.
-
----
-
-## 11) Security Notes (dev assumptions)
-- Supabase anon key and Pi SSH password are stored in plain text for development. Replace with secrets management before production.
-- Password hashing is unsalted SHA-256; upgrade to a salted KDF (e.g., bcrypt/argon2) for production.
-- RLS is disabled for `users`/`results`; re-enable and add proper policies before production.
-
----
-
-## 12) Comment/Log Conventions
-- Code comments use `TR | EN | RU` tri-language format across Dart/Python.
-- Logs and comments avoid emojis; plain text for reliability in parsers/log viewers.
