@@ -79,7 +79,16 @@ class SupabaseService {
     final response = await client
         .from('results')
         .select()
-        .eq('created_by', userId)
+        .eq('text_type', textType)
+        .order('created_at', ascending: false);
+    return List<Map<String, dynamic>>.from(response);
+  }
+  
+  /// TR: Tüm kullanıcılar için metin tipine göre sonuçları getir | EN: Get results by text type for all users | RU: Получить результаты по типу текста для всех пользователей
+  Future<List<Map<String, dynamic>>> getResultsByType(String textType) async {
+    final response = await client
+        .from('results')
+        .select()
         .eq('text_type', textType)
         .order('created_at', ascending: false);
     return List<Map<String, dynamic>>.from(response);

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../widgets/app_drawer.dart';
 import '../widgets/bucket_card.dart' as bucket_card;
-import '../../controllers/auth_service.dart';
 import '../../controllers/supabase.dart';
 import '../../models/app_strings.dart';
 import 'package:design/constants/app_constants.dart';
@@ -47,16 +46,9 @@ class _ResultsState extends State<Results> {
 
   Future<void> _load() async {
     setState(() => _loading = true);
-
-    // TR: Mevcut kullanıcıyı al | EN: Get current user | RU: Получить текущего пользователя
-    final user = AuthService.currentUser;
-    if (user == null) {
-      setState(() => _loading = false);
-      return;
-    }
-
-    // TR: Kullanıcıya özel sonuçları metin türüne göre al | EN: Get user-specific results by text type | RU: Получить результаты пользователя по типу текста
-    final list = await _supabaseService.getUserResultsByType(user.id, _textType);
+    
+    // TR: Tüm kullanıcıların sonuçlarını metin türüne göre al | EN: Get results by text type for all users | RU: Получить результаты всех пользователей по типу текста
+    final list = await _supabaseService.getResultsByType(_textType);
 
     list.sort((a, b) {
       final ad = DateTime.tryParse('${a['created_at']}') ?? DateTime(1970);

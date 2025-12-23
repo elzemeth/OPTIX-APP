@@ -382,7 +382,7 @@ class CommandCharacteristic(Characteristic):
                 logger.info(f"Found {len(networks)} networks")
             elif data_str == "get_serial":
                 serial = SystemUtils.get_serial_number()
-                logger.info(f"🔢 Serial: {serial}")
+                logger.info(f"Serial detected: {serial}")
                 # Send serial back to mobile app
                 self.service.optix_system.send_status(f"Serial: {serial}")
             elif data_str.startswith("auth:"):
@@ -655,8 +655,8 @@ class OptixSystem:
         self.wifi_watcher = None  # WiFi file watcher observer
         self.wifi_watcher_thread = None  # WiFi watcher thread
         
-        logger.info(f"OPTIX System initialized")
-        logger.info(f"🔢 Serial: {self.serial_number}")
+        logger.info("OPTIX System initialized")
+        logger.info(f"Serial: {self.serial_number}")
         logger.info(f"Hash: {self.device_hash}")
 
     def ensure_advertising(self):
@@ -667,6 +667,16 @@ class OptixSystem:
             result = subprocess.run(['bluetoothctl', 'show'], capture_output=True, text=True, timeout=3)
             output = result.stdout or ''
             # ActiveInstances: 0x0 → reklam yok
+            if 'Discoverable: no' in output:
+                try:
+                    subprocess.run(['bluetoothctl', 'discoverable', 'on'],
+                                   capture_output=True, text=True, timeout=5)
+                    subprocess.run(['bluetoothctl', 'pairable', 'on'],
+                                   capture_output=True, text=True, timeout=5)
+                    logger.info('Adapter set to discoverable/pairable for advertising')
+                except Exception as e:
+                    logger.warning(f'Failed to force discoverable/pairable: {e}')
+
             if 'ActiveInstances: 0x0' in output:
                 logger.warning('No active advertising instances - restarting advertisement')
                 le_advertising_manager = dbus.Interface(
@@ -770,7 +780,7 @@ network={{
             device_serial = reg_info.get('device_serial', '')
             
             logger.info(f"Registration request for: {username}")
-            logger.info(f"📧 Email: {email}")
+            logger.info(f"Email: {email}")
             logger.info(f"Device serial: {device_serial}")
             
             password_hash = SystemUtils.hash_password(password)
@@ -1074,7 +1084,7 @@ network={{
                     logger.info('Bluetooth discoverable confirmed')
                 if 'Advertising Features' in output:
                     # TR: Aktif reklam örneklerini kontrol et | EN: Check for active advertising instances | RU: Проверить наличие активных экземпляров рекламы
-                    if 'ActiveInstances: 0x0' in output:
+                    if ('ActiveInstances: 0x0' in output) or ('ActiveInstances: 0x00' in output) or ('ActiveInstances: 0x000' in output) or ('ActiveInstances: 0)' in output):
                         logger.warning('No active advertising instances - advertising may not have started')
                     elif 'ActiveInstances: 0x' in output:
                         logger.info('LE advertising active (Advertisement registered)')
@@ -1093,69 +1103,117 @@ network={{
     def start_camera_streaming(self, host: str = DEFAULT_SERVER_HOST, port: int = DEFAULT_SERVER_PORT):
         if self.streaming_active:
             return
+        if not self.camera_system.camera_tool:
+            logger.warning("Camera tool not available; streaming skipped")
+            return
             
         self.streaming_active = True
         stream_thread = threading.Thread(target=self.camera_stream_loop, args=(host, port))
         stream_thread.daemon = True
         stream_thread.start()
-        logger.info(f"📹 Camera streaming started to {host}:{port}")
+        logger.info(f"Camera streaming started to {host}:{port}")
     
     def camera_stream_loop(self, host: str, port: int):
+        logger.info(f"Starting camera streaming loop to {host}:{port}")
         last_suggestion = None
         stable_hits = 0
         current_profile = PROFILE_QUALITY
-        
-        try:
-            client_socket = socket.socket()
-            client_socket.connect((host, port))
-            logger.info("Connected to streaming server!")
-            
-            image_count = 0
-            
-            while self.streaming_active:
-                exp_us, again, fps = self.camera_system.probe_environment()
-                logger.debug(f"exp={exp_us:.0f}us ag={again:.1f} fps~{fps:.1f}")
-                
-                suggested = self.camera_system.suggest_profile(exp_us, again, fps)
-                
-                if last_suggestion and suggested.name == last_suggestion:
-                    stable_hits += 1
-                else:
-                    last_suggestion = suggested.name
-                    stable_hits = 1
-                
-                if suggested.name != current_profile.name and stable_hits >= HYSTERESIS_HITS:
-                    logger.info(f"Profile switch: {current_profile.name} -> {suggested.name}")
-                    current_profile = suggested
-                    stable_hits = 0
-                
-                image_data = self.camera_system.capture_image(current_profile)
-                
-                if image_data:
-                    try:
-                        size = len(image_data)
-                        client_socket.sendall(size.to_bytes(4, byteorder='big'))
-                        client_socket.sendall(image_data)
-                        image_count += 1
-                        logger.debug(f"📤 Image #{image_count} ({size} bytes)")
-                    except Exception as e:
-                        logger.error(f"📤 Send error: {e}")
-                        break
-                else:
-                    logger.warning("Capture failed")
-                
-                time.sleep(CAMERA_INTERVAL_SEC)
-                
-        except Exception as e:
-            logger.error(f"Streaming error: {e}")
-        finally:
+        reconnect_delay = 5
+        max_reconnect_attempts = 10
+        reconnect_attempts = 0
+
+        while self.streaming_active and reconnect_attempts < max_reconnect_attempts:
+            client_socket = None
             try:
-                client_socket.close()
-                logger.info("Streaming connection closed")
-            except Exception:
-                pass
-            self.streaming_active = False
-    
+                client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                client_socket.settimeout(10.0)
+                logger.info(f"Connecting to {host}:{port}...")
+                client_socket.connect((host, port))
+                logger.info("Connected to streaming server!")
+
+                image_count = 0
+
+                while self.streaming_active:
+                    try:
+                        exp_us, again, fps = self.camera_system.probe_environment()
+                        logger.debug(f"exp={exp_us:.0f}us ag={again:.1f} fps~{fps:.1f}")
+
+                        suggested = self.camera_system.suggest_profile(exp_us, again, fps)
+                        if last_suggestion and suggested.name == last_suggestion:
+                            stable_hits += 1
+                        else:
+                            last_suggestion = suggested.name
+                            stable_hits = 1
+
+                        if suggested.name != current_profile.name and stable_hits >= HYSTERESIS_HITS:
+                            logger.info(f"Profile switch: {current_profile.name} -> {suggested.name}")
+                            current_profile = suggested
+                            stable_hits = 0
+
+                        image_data = self.camera_system.capture_image(current_profile)
+                        if image_data:
+                            try:
+                                size = len(image_data)
+                                client_socket.sendall(size.to_bytes(4, byteorder='big'))
+
+                                total_sent = 0
+                                chunk_size = 64 * 1024
+                                while total_sent < size:
+                                    chunk = image_data[total_sent:total_sent + chunk_size]
+                                    sent = client_socket.send(chunk)
+                                    if sent == 0:
+                                        raise socket.error("Connection broken during send")
+                                    total_sent += sent
+
+                                image_count += 1
+                                logger.info(f"Image {image_count} sent successfully ({size} bytes)")
+                            except socket.error as e:
+                                logger.error(f"Image send error: {e}")
+                                break
+                            except Exception as e:
+                                logger.error(f"Unexpected error during send: {e}")
+                                break
+                        else:
+                            logger.warning("Capture failed - skipping this frame")
+
+                        time.sleep(CAMERA_INTERVAL_SEC)
+
+                    except socket.timeout:
+                        logger.warning("Socket timeout - reconnecting...")
+                        break
+                    except socket.error as e:
+                        logger.error(f"Socket error: {e}")
+                        break
+                    except Exception as e:
+                        logger.error(f"Unexpected error in streaming loop: {e}")
+                        break
+
+            except socket.error as e:
+                logger.error(f"Connection error: {e}")
+            except Exception as e:
+                logger.error(f"Streaming error: {e}")
+            finally:
+                if client_socket:
+                    try:
+                        client_socket.close()
+                        logger.info("Streaming connection closed")
+                    except Exception:
+                        pass
+
+            if not self.streaming_active:
+                break
+
+            reconnect_attempts += 1
+            if reconnect_attempts >= max_reconnect_attempts:
+                logger.error(f"Max reconnection attempts reached ({max_reconnect_attempts})")
+                break
+            logger.info(f"Reconnecting in {reconnect_delay} seconds... (attempt {reconnect_attempts}/{max_reconnect_attempts})")
+            time.sleep(reconnect_delay)
+
+        logger.info("Camera streaming stopped")
+        self.streaming_active = False
+
+
     def start_wifi_watcher(self):
         """TR: WiFi credentials dosya izleyicisini başlat | EN: Start WiFi credentials file watcher | RU: Запустить наблюдатель файла учетных данных WiFi"""
         if not HAS_WATCHDOG:
@@ -1163,7 +1221,7 @@ network={{
             return
         
         try:
-            logger.info("📁 Starting WiFi credentials file watcher...")
+            logger.info("Starting WiFi credentials file watcher...")
             
             # TR: Dosyayı oluştur (yoksa) | EN: Create file if it doesn't exist | RU: Создать файл, если его нет
             Path(WIFI_CREDENTIALS_FILE).touch(exist_ok=True)
